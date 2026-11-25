@@ -1,0 +1,2223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIR.knowledge — БРС ОрГМУ 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+  if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+</script>
+<style>
+/* ================= ПЕРЕМЕННЫЕ ================= */
+:root{
+  --bg:#0b1020; --panel:#131b30; --panel-2:#1b2741;
+  --accent:#8b7cff; --accent-2:#55e0c1;
+  --text:#eef2ff; --muted:#9aa8c7;
+  --danger:#ff718d; --warn:#ffc56b; --ok:#4adeb5;
+  --border:#293653; --radius:18px;
+}
+body.light{
+  --bg:#f3f5fc; --panel:#ffffff; --panel-2:#f0f2fb;
+  --accent:#6557d9; --accent-2:#168f78;
+  --text:#1d2540; --muted:#697493;
+  --danger:#d94867; --warn:#b87917; --ok:#168f78;
+  --border:#e0e5f2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  font-size:15px;line-height:1.5;transition:background .25s,color .25s;
+}
+.app{display:block;min-height:100vh}
+
+/* ================= НИЖНЯЯ НАВИГАЦИЯ (только на мобильном/планшете) ================= */
+#bottom-nav{
+  position:fixed;top:0;bottom:0;left:0;width:224px;
+  background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;justify-content:flex-start;gap:8px;
+  z-index:100;padding:24px 14px;box-shadow:8px 0 28px rgba(0,0,0,.12);
+}
+#bottom-nav button{
+  width:100%;background:transparent;color:var(--muted);
+  display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;
+  font-size:13px;padding:12px 14px;border-radius:12px;border:none;cursor:pointer;
+  transition:.18s;text-align:left;
+}
+#bottom-nav button .ico{font-size:19px;width:24px;text-align:center}
+#bottom-nav button.active{color:var(--accent);background:var(--panel-2)}
+#bottom-nav button:hover{color:var(--text)}
+
+/* ================= ОСНОВНОЙ КОНТЕНТ ================= */
+.main{padding:34px 34px 60px;max-width:1120px;width:calc(100% - 224px);margin:0 0 0 224px}
+h1{font-size:30px;letter-spacing:-.7px}
+.card{box-shadow:0 8px 24px rgba(0,0,0,.07)}
+.btn{border-radius:12px}
+.btn-primary{background:linear-gradient(120deg,var(--accent),#a08fff);box-shadow:0 5px 14px rgba(139,124,255,.2)}
+.discipline-row,.doc-item,.topic-item{border-radius:14px}
+@media(max-width:760px){
+  #bottom-nav{top:auto;bottom:0;left:0;right:0;width:auto;height:68px;flex-direction:row;justify-content:space-around;gap:2px;padding:5px 4px;border-right:0;border-top:1px solid var(--border);box-shadow:0 -6px 24px rgba(0,0,0,.18)}
+  #bottom-nav button{width:auto;flex:1;flex-direction:column;justify-content:center;gap:1px;font-size:10px;padding:5px 2px;text-align:center}
+  #bottom-nav button .ico{font-size:18px;width:auto}
+  .main{width:100%;margin:0;padding:22px 14px 92px}
+  h1{font-size:25px}
+}
+h1{font-size:24px;margin-bottom:6px}
+h2{font-size:18px;margin-bottom:12px}
+h3{font-size:15px;margin-bottom:8px}
+.sub{color:var(--muted);margin-bottom:18px;font-size:14px}
+.page{display:none;animation:fade .25s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ================= КАРТОЧКИ ================= */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.grid{display:grid;gap:12px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.stat-card{display:flex;flex-direction:column;gap:4px}
+.stat-value{font-size:26px;font-weight:800}
+.stat-label{color:var(--muted);font-size:12px}
+.accent{color:var(--accent-2)}
+
+/* ================= КНОПКИ ================= */
+.btn{border:none;padding:10px 16px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14px;transition:.15s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn-primary{background:linear-gradient(90deg,var(--accent),#8f7bff);color:#fff}
+.btn-green{background:linear-gradient(90deg,#00d2a8,#00b894);color:#0f1220}
+.btn-ghost{background:var(--panel-2);color:var(--text);border:1px solid var(--border)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-block{width:100%}
+.btn-sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ================= ФОРМЫ ================= */
+input[type=text],input[type=number],input[type=time],input[type=date],textarea,select{
+  width:100%;padding:10px 12px;border-radius:10px;
+  background:var(--panel-2);border:1px solid var(--border);
+  color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:.15s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{min-height:80px;resize:vertical}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+
+/* ================= БЕЙДЖИ ================= */
+.badge{background:var(--accent);color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+.badge.ok{background:var(--ok)} .badge.warn{background:var(--warn)} .badge.danger{background:var(--danger)}
+.empty{text-align:center;padding:24px;color:var(--muted);font-size:14px}
+.tag{display:inline-block;background:rgba(108,92,231,.2);color:var(--accent-2);padding:3px 8px;border-radius:6px;font-size:12px;margin:2px 3px 2px 0;font-weight:600}
+.tag-red{background:rgba(255,92,122,.2);color:var(--danger)}
+
+/* ================= БРС ДНЕВНИК ================= */
+.discipline-row{
+  background:var(--panel-2);border-radius:10px;margin-bottom:8px;
+  border:1px solid var(--border);overflow:hidden;
+}
+.discipline-header{
+  padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+  transition:.15s;user-select:none;
+}
+.discipline-header:hover{background:rgba(108,92,231,.08)}
+.discipline-header .name{font-weight:700;font-size:15px}
+.discipline-header .avg-badge{background:var(--accent);color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.discipline-body{
+  padding:0 16px;max-height:0;overflow:hidden;transition:max-height .3s ease;
+  border-top:1px solid transparent;
+}
+.discipline-row.open .discipline-body{max-height:2000px;padding:14px 16px;border-top-color:var(--border)}
+.discipline-row.open .discipline-header{background:rgba(108,92,231,.12)}
+.topic-item{background:var(--panel);border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)}
+.topic-name{font-weight:600;margin-bottom:8px;font-size:13px;color:var(--accent-2)}
+.grades-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px}
+.grade-box{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:12px}
+.grade-box select{width:60px;padding:4px 6px;font-size:13px;text-align:center}
+.grade-avg{margin-left:auto;color:var(--muted);font-size:12px}
+.grade-avg b{color:var(--text);font-size:14px}
+.brs-summary{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.05)}
+.brs-summary:last-child{border-bottom:none}
+.brs-summary .lbl{color:var(--muted)}
+.brs-summary .val{font-weight:700}
+.grade-5{color:var(--ok)} .grade-4{color:var(--accent-2)} .grade-3{color:var(--warn)} .grade-2{color:var(--danger)}
+
+/* ================= ТЕСТЫ ================= */
+.dropzone{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s;background:var(--panel);margin-bottom:10px}
+.dropzone.drag{border-color:var(--accent-2);background:var(--panel-2);color:var(--text)}
+.dropzone h3{color:var(--text);margin-bottom:6px;font-size:14px}
+.dropzone.loaded{border-color:var(--ok);border-style:solid}
+.dropzone.loaded h3{color:var(--ok)}
+.doc-item{background:var(--panel-2);border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;border:1px solid var(--border);font-size:13px}
+.test-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.progress-bar{height:6px;background:var(--panel-2);border-radius:20px;overflow:hidden;margin-bottom:16px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%;transition:.3s}
+.question-text{font-size:17px;font-weight:600;line-height:1.5;margin-bottom:16px;white-space:pre-wrap}
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.option{padding:12px 14px;border-radius:10px;border:2px solid var(--border);background:var(--panel);cursor:pointer;transition:.15s;font-size:14px}
+.option:hover{border-color:var(--accent)}
+.option.selected{border-color:var(--accent);background:rgba(108,92,231,.15)}
+.option.correct{border-color:var(--ok);background:rgba(56,211,159,.12)}
+.option.incorrect{border-color:var(--danger);background:rgba(255,92,122,.12)}
+.feedback{padding:12px;border-radius:10px;margin-top:12px;font-size:13px;line-height:1.5}
+.feedback.ok{background:rgba(56,211,159,.1);border:1px solid var(--ok)}
+.feedback.bad{background:rgba(255,92,122,.1);border:1px solid var(--danger)}
+.timer-display{color:var(--warn);font-weight:700;font-size:14px}
+.timer-bar{height:5px;background:var(--panel-2);border-radius:6px;overflow:hidden;margin:8px 0}
+.timer-fill{height:100%;background:var(--accent);transition:width 1s linear}
+
+/* ================= РЕЗУЛЬТАТ ================= */
+.result-hero{border-radius:var(--radius);padding:24px;text-align:center;color:#fff;margin-bottom:16px}
+.result-hero h2{font-size:44px;margin-bottom:4px}
+.result-hero.ok{background:linear-gradient(135deg,#38d39f,#00b894)}
+.result-hero.bad{background:linear-gradient(135deg,#ff5c7a,#e03131)}
+
+/* ================= КОНСПЕКТ ================= */
+.notes-editor{background:var(--panel-2);border-radius:10px;padding:14px;min-height:200px;font-size:14px;line-height:1.7;outline:none;white-space:pre-wrap;word-wrap:break-word}
+.notes-editor:focus{box-shadow:0 0 0 2px var(--accent)}
+mark.highlight{background:rgba(255,184,77,.5);color:inherit;padding:1px 2px;border-radius:3px}
+mark.highlight-red{background:rgba(255,92,122,.5);color:inherit}
+mark.highlight-green{background:rgba(56,211,159,.5);color:inherit}
+.highlight-tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.hl-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--panel);cursor:pointer;font-size:12px;color:var(--text)}
+.hl-btn:hover{border-color:var(--accent)}
+.note-subject-tag{background:var(--accent);color:#fff;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+
+
+/* ================= УЧЕБНЫЙ КОНСПЕКТ ================= */
+.notes-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:10px 0}
+.notes-image-card{position:relative;background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:6px}
+.notes-image-card img{width:100%;height:110px;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.08)}
+.notes-image-card button{position:absolute;top:8px;right:8px}
+.notes-actions{margin-top:12px}
+.notes-study-area{margin-top:14px;padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--panel-2)}
+.study-flashcard{min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;padding:22px;border-radius:14px;background:var(--panel);border:1px solid var(--border);font-size:18px;font-weight:650;cursor:pointer}
+.notes-focus #notes-input{min-height:55vh;font-size:17px;line-height:1.85}
+.notes-focus .notes-actions{position:sticky;bottom:76px;background:var(--panel);padding:10px;border-radius:12px;z-index:5}
+@media(max-width:640px){.notes-actions .btn{flex:1 1 42%}}
+
+/* ================= МОДАЛКА ================= */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.modal-overlay.open{display:flex}
+.modal-overlay .card{max-width:600px;width:100%;max-height:90vh;overflow-y:auto;margin:0}
+
+/* ================= TOAST ================= */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);padding:12px 20px;background:var(--panel-2);border:1px solid var(--accent);border-radius:10px;z-index:9999;opacity:0;transition:all .3s;max-width:90vw;font-size:14px;text-align:center;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--ok)} .toast.error{border-color:var(--danger)}
+
+/* ================= SPINNER ================= */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ================= ПАРСЕР ТАБЛИЦА ================= */
+.pair-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+.pair-table th{text-align:left;padding:8px;background:var(--panel-2);color:var(--muted);font-weight:600;font-size:11px;position:sticky;top:0}
+.pair-table td{padding:8px;border-bottom:1px solid var(--border);vertical-align:top}
+.pair-table tr.matched td:first-child{border-left:3px solid var(--ok)}
+.pair-table tr.unmatched td:first-child{border-left:3px solid var(--danger)}
+.pair-table tr.unmatched{background:rgba(255,92,122,.05)}
+.mark{font-family:monospace;font-weight:700;color:var(--accent-2);background:var(--panel-2);padding:1px 6px;border-radius:4px;display:inline-block;min-width:24px;text-align:center;font-size:11px}
+
+/* ================= РАСПИСАНИЕ ================= */
+.schedule-slot{background:var(--panel-2);border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:3px solid var(--accent);font-size:13px}
+.schedule-slot.empty-slot{border-left-color:var(--border);color:var(--muted);font-style:italic}
+.schedule-slot .sched-subject{font-weight:700}
+.schedule-slot .sched-time{color:var(--accent);font-weight:600;font-size:12px}
+.schedule-slot .sched-hw{color:var(--muted);font-size:12px;margin-top:4px}
+.schedule-slot.done{opacity:.5;border-left-color:var(--ok)}
+.schedule-slot.done .sched-subject{text-decoration:line-through}
+.week-day{margin-bottom:16px}
+.week-day h3{color:var(--accent-2);margin-bottom:8px;font-size:14px}
+</style>
+
+<style id="mir-total-redesign">
+:root{--bg:#f4f2ed;--panel:#fffefa;--panel-2:#f0eee8;--accent:#d95f43;--accent-2:#277b70;--text:#242b2a;--muted:#7b817c;--danger:#c84e55;--warn:#bd8738;--ok:#34856d;--border:#e5e1d8;--radius:19px}
+body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);letter-spacing:-.01em}
+body:not(.light){--bg:#171d1c;--panel:#202927;--panel-2:#293330;--accent:#f17b5c;--accent-2:#69c5ae;--text:#f3f0e8;--muted:#a2aaa4;--danger:#ef747b;--warn:#e5b86d;--ok:#70c6a5;--border:#35413d}
+.app{min-height:100vh}
+#bottom-nav{width:258px;padding:26px 18px 18px;background:#202b29;border:0;box-shadow:12px 0 36px rgba(25,35,31,.10);gap:7px}
+.side-brand{display:flex;align-items:center;gap:12px;padding:4px 9px 27px;color:#f7f4ec}
+.brand-mark{width:43px;height:43px;border-radius:14px;background:#ef795a;color:white;display:grid;place-items:center;font-size:24px;font-weight:900;letter-spacing:-3px;box-shadow:0 7px 20px #ef795a44}.brand-mark span{color:#ffd5a4}
+.side-brand b{display:block;font-size:15px;letter-spacing:-.5px}.side-brand b span{color:#e88a6e}.side-brand small{display:block;color:#94a39b;font-size:9px;letter-spacing:1.6px;margin-top:3px}
+.side-caption{padding:0 12px 8px;color:#7f9288;font-size:9px;font-weight:800;letter-spacing:1.6px}
+#bottom-nav button{color:#aab7ae;border-radius:13px;padding:13px 14px;font-size:13px;font-weight:600;gap:13px}
+#bottom-nav button .ico{font-size:17px;filter:saturate(.75)}
+#bottom-nav button.active{background:#34433e;color:#fff;box-shadow:inset 3px 0 #f17b5c}
+#bottom-nav button:hover{background:#2c3935;color:#fff}
+.side-footer{margin-top:auto;padding:18px 11px 4px;border-top:1px solid #3a4842;color:#9aa99f;font-size:11px;display:flex;align-items:center;gap:9px}.status-dot{width:7px;height:7px;border-radius:50%;background:#68c49c;box-shadow:0 0 0 4px #68c49c20}
+.main{width:calc(100% - 258px);max-width:1440px;margin-left:258px;padding:26px clamp(20px,4vw,64px) 70px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 0 23px;margin-bottom:26px;border-bottom:1px solid var(--border)}
+.topbar-kicker{font-size:9px;letter-spacing:2px;font-weight:800;color:var(--muted)}.topbar-title{font-size:17px;font-weight:800;letter-spacing:-.6px;margin-top:2px}.topbar-actions{display:flex;align-items:center;gap:14px}.topbar-date{text-transform:capitalize;color:var(--muted);font-size:12px}.theme-quick{width:38px;height:38px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text);font-size:19px;cursor:pointer}
+h1{font-size:clamp(26px,3vw,38px);line-height:1.08;letter-spacing:-1.5px;font-weight:850;margin-bottom:10px}h2{font-size:19px;letter-spacing:-.5px}h3{font-size:15px}.sub{font-size:13px;color:var(--muted)}
+.dashboard-hero{min-height:310px;border-radius:27px;background:#263632;color:#f8f4eb;display:grid;grid-template-columns:1.15fr .85fr;overflow:hidden;position:relative;margin:8px 0 22px;box-shadow:0 20px 45px rgba(30,46,39,.14)}
+.hero-copy{padding:clamp(25px,4vw,48px);position:relative;z-index:2}.hero-overline{font-size:9px;letter-spacing:2.3px;color:#a9c0b4;font-weight:800;margin-bottom:18px}.hero-copy h1{font-size:clamp(32px,4vw,49px);line-height:1.02;color:#fffaf0;margin:0 0 15px;letter-spacing:-2px}.hero-copy p{max-width:420px;color:#c0cec5;font-size:14px;line-height:1.7}.hero-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:25px}.hero-actions .btn-primary{background:#f17b5c;color:#fff;box-shadow:none;padding:12px 18px}.hero-link{border:0;background:none;color:#e6eee7;font-weight:650;cursor:pointer;font-size:12px}.hero-art{position:relative;min-height:260px;background:radial-gradient(circle at 52% 48%,#57766a 0,#354c43 33%,#263632 70%)}.hero-symbol{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-9deg);font-size:120px;font-weight:950;letter-spacing:-13px;color:#f7e9d1;text-shadow:12px 17px 0 #1c2d28}.hero-symbol span{color:#f17b5c}.orbit{position:absolute;left:50%;top:50%;border:1px solid #c4d4c733;border-radius:50%;transform:translate(-50%,-50%) rotate(-25deg)}.orbit-one{width:260px;height:170px}.orbit-two{width:320px;height:220px;transform:translate(-50%,-50%) rotate(45deg)}.hero-chip{position:absolute;padding:7px 10px;border-radius:8px;background:#f6eddd;color:#35443c;font-size:9px;font-weight:900;letter-spacing:1.4px;box-shadow:0 8px 18px #17251f55}.chip-a{top:22%;left:14%;transform:rotate(-8deg)}.chip-b{bottom:21%;right:10%;transform:rotate(7deg)}
+.card{border-radius:18px;padding:19px;background:var(--panel);border:1px solid var(--border);box-shadow:0 5px 18px rgba(31,40,34,.035);margin-bottom:14px}.grid{gap:14px}.stat-card{position:relative;min-height:105px;justify-content:center;padding:19px 21px;overflow:hidden}.stat-card:after{content:"";position:absolute;width:70px;height:70px;border-radius:50%;right:-22px;top:-23px;background:var(--accent);opacity:.08}.stat-value{font-size:32px;letter-spacing:-1.5px}.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;font-weight:800;color:var(--muted)}
+.btn{border-radius:11px;padding:10px 15px;font-size:12px;letter-spacing:.1px}.btn-primary{background:var(--accent);box-shadow:0 5px 13px color-mix(in srgb,var(--accent) 22%,transparent)}.btn-green{background:var(--ok);color:white}.btn-ghost{background:var(--panel-2);border:1px solid var(--border)}
+input[type=text],input[type=number],input[type=time],input[type=date],textarea,select{border-radius:11px;background:var(--panel-2);border:1px solid var(--border);padding:12px 13px}.dropzone{border-radius:18px;background:var(--panel);border-color:#d9d4c8}.discipline-row,.doc-item,.topic-item{border-radius:14px}.discipline-header{padding:17px 18px}.discipline-header .avg-badge{background:var(--accent)}.topic-item{padding:13px 14px}.option{border-radius:13px;padding:14px 16px}.option.selected{background:color-mix(in srgb,var(--accent) 10%,var(--panel));}.result-hero{border-radius:20px}.notes-study-area{border-radius:18px}.modal-overlay{backdrop-filter:blur(7px)}.modal-overlay .card{border-radius:22px}
+.page{animation:fade .22s ease}.page.active{max-width:1100px}
+@media(max-width:760px){#bottom-nav{top:auto;bottom:0;left:0;right:0;width:auto;height:72px;flex-direction:row;justify-content:space-around;gap:2px;padding:6px 5px;background:#202b29;border:0;border-top:1px solid #3a4842}#bottom-nav .side-brand,#bottom-nav .side-caption,#bottom-nav .side-footer{display:none}#bottom-nav button{flex:1;width:auto;flex-direction:column;justify-content:center;gap:1px;padding:5px 2px;font-size:9px}#bottom-nav button .ico{font-size:17px}.main{width:100%;margin:0;padding:17px 14px 96px}.topbar{padding-bottom:14px;margin-bottom:17px}.topbar-date{font-size:10px}.dashboard-hero{grid-template-columns:1fr;min-height:0}.hero-copy{padding:28px 23px 20px}.hero-copy h1{font-size:36px}.hero-art{min-height:170px}.hero-symbol{font-size:83px}.orbit-one{width:200px;height:125px}.orbit-two{width:240px;height:160px}.grid-2,.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-card{min-height:88px;padding:14px}.stat-value{font-size:26px}}
+@media(max-width:430px){.grid-2,.grid-3{grid-template-columns:1fr 1fr}.hero-actions{gap:12px}.hero-copy h1{font-size:32px}.topbar-title{font-size:15px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <main class="main">
+    <header class="topbar">
+      <div><div class="topbar-kicker">MIR / PERSONAL LEARNING SPACE</div><div class="topbar-title">Учебный штаб</div></div>
+      <div class="topbar-actions"><span class="topbar-date" id="todayLabel"></span><button class="theme-quick" onclick="toggleTheme()" aria-label="Сменить тему">◐</button></div>
+    </header>
+    <!-- ================= ГЛАВНАЯ ================= -->
+    <section class="page active" id="page-home">
+      <div class="dashboard-hero">
+        <div class="hero-copy"><div class="hero-overline">ТВОЯ СИСТЕМА ОБУЧЕНИЯ</div><h1>Знания складываются<br>в результат.</h1><p>Тестируй себя, собирай конспекты и держи оценки под контролем — всё в одном пространстве.</p><div class="hero-actions"><button class="btn btn-primary" onclick="nav('tests')">Начать тест <span>↗</span></button><button class="hero-link" onclick="nav('notes')">Открыть конспекты →</button></div></div>
+        <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-symbol">M<span>.</span></div><div class="hero-chip chip-a">FOCUS</div><div class="hero-chip chip-b">PROGRESS</div></div>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:16px">
+        <div class="card stat-card"><div class="stat-value" id="stat-tests">0</div><div class="stat-label">Тестов</div></div>
+        <div class="card stat-card"><div class="stat-value accent" id="stat-questions">0</div><div class="stat-label">Вопросов</div></div>
+        <div class="card stat-card"><div class="stat-value" id="stat-passed">0</div><div class="stat-label">Пройдено</div></div>
+      </div>
+      <div class="card">
+        <h2>Последний результат</h2>
+        <div id="lastResult" class="empty">Пока нет пройденных тестов</div>
+      </div>
+    </section>
+
+    <!-- ================= ДНЕВНИК БРС ================= -->
+    <section class="page" id="page-brs">
+      <h1>📓 Дневник БРС</h1>
+      <p class="sub">Нажми на дисциплину, чтобы раскрыть темы и оценки.</p>
+      <div class="row" style="margin-bottom:14px">
+        <button class="btn btn-primary" onclick="openAddDiscipline()">➕ Дисциплина</button>
+        <button class="btn btn-ghost" onclick="exportBrs()">📤</button>
+        <button class="btn btn-ghost" onclick="importBrs()">📥</button>
+      </div>
+      <div id="brsList"></div>
+    </section>
+
+    <!-- ================= ТЕСТЫ (в стиле MIRTEST) ================= -->
+    <section class="page" id="page-tests">
+      <h1>🧪 Тесты</h1>
+      <p class="sub">Импортируйте вопросы и ответы из файлов или создайте тест вручную.</p>
+      <div class="step-indicator" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <div class="step active" id="tstep1" style="padding:6px 12px;border-radius:16px;background:linear-gradient(90deg,var(--accent),#8f7bff);color:#fff;font-size:12px;font-weight:600">1. Загрузить</div>
+        <div class="step" id="tstep2" style="padding:6px 12px;border-radius:16px;background:var(--panel-2);color:var(--muted);font-size:12px;font-weight:600">2. Проверить</div>
+        <div class="step" id="tstep3" style="padding:6px 12px;border-radius:16px;background:var(--panel-2);color:var(--muted);font-size:12px;font-weight:600">3. Готово</div>
+      </div>
+      <div id="testStep1">
+        <div class="grid grid-2">
+          <div class="dropzone" id="dzQuestions"><h3>📄 ВОПРОСЫ</h3><p style="font-size:11px;margin-top:6px;color:var(--muted)">1. Вопрос?<br>1. вариант</p><input type="file" id="inputQuestions" accept=".txt,.docx,.pdf" style="display:none"></div>
+          <div class="dropzone" id="dzAnswers"><h3>✅ ОТВЕТЫ</h3><p style="font-size:11px;margin-top:6px;color:var(--muted)">1. Правильный ответ: 2</p><input type="file" id="inputAnswers" accept=".txt,.docx,.pdf" style="display:none"></div>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <div class="form-row"><label>Название теста</label><input type="text" id="testDocName" placeholder="Модуль 1"></div>
+          <button class="btn btn-primary btn-block" onclick="runTestParse()">🔍 Распознать</button>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <h3>Или создайте вручную</h3>
+          <button class="btn btn-ghost btn-block" onclick="openTestForm()" style="margin-top:8px">✏️ Создать тест вручную</button>
+        </div>
+      </div>
+      <div id="testStep2" style="display:none">
+        <div class="card">
+          <div class="row" style="margin-bottom:10px"><b>Результат:</b><div class="spacer"></div><span class="badge ok" id="pairMatched">0</span><span class="badge danger" id="pairErrors">0</span></div>
+          <div id="pairTableWrap" style="max-height:400px;overflow-y:auto"></div>
+          <div class="row" style="margin-top:12px"><button class="btn btn-ghost" onclick="testBackToStep1()">← Назад</button><div class="spacer"></div><button class="btn btn-primary" onclick="testConfirm()">✅ Импортировать</button></div>
+        </div>
+      </div>
+      <div id="testStep3" style="display:none">
+        <div class="card" style="text-align:center;padding:30px"><h2>🎉 Готово!</h2><p class="sub" style="margin:12px 0" id="pairDoneText"></p><button class="btn btn-primary" onclick="nav('startTest')">Начать тест</button></div>
+      </div>
+      <div class="card" style="margin-top:14px"><h3>Мои тесты</h3><div id="tests-list"></div></div>
+      <div class="card hidden" id="test-form-card">
+        <h2 id="test-form-title">Создание теста</h2>
+        <input type="hidden" id="test-edit-id">
+        <div class="form-row"><label>Название</label><input type="text" id="test-title" placeholder="Анатомия"></div>
+        <div class="form-row"><label>Таймер на вопрос</label><select id="test-timer"><option value="20">20 сек</option><option value="30" selected>30 сек</option><option value="60">1 мин</option></select></div>
+        <div id="questions-container"></div>
+        <div class="row" style="margin-bottom:12px"><button class="btn btn-ghost btn-sm" onclick="addFormQuestion()">+ Вопрос</button></div>
+        <div class="row"><button class="btn btn-green" onclick="saveTest()">💾 Сохранить</button><button class="btn btn-ghost" onclick="closeTestForm()">Отмена</button></div>
+      </div>
+    </section>
+
+    <!-- ================= ЗАПУСК ТЕСТА ================= -->
+    <section class="page" id="page-startTest">
+      <h1>▶️ Начать тест</h1>
+      <div class="card">
+        <div class="form-row"><label>Тест</label><select id="cfgTest"></select></div>
+        <div class="form-row"><label>Вопросов</label><select id="cfgCount"><option value="10">10</option><option value="20" selected>20</option><option value="0">Все</option></select></div>
+        <div class="form-row"><label>Порядок</label><select id="cfgOrder"><option value="random" selected>Случайный</option><option value="seq">По порядку</option></select></div>
+        <div class="form-row"><label class="toggle" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="cfgShuffle" checked style="width:auto"> Перемешивать варианты</label></div>
+        <button class="btn btn-primary btn-block" onclick="startTest()">Начать</button>
+      </div>
+    </section>
+
+    <section class="page" id="page-test">
+      <div class="test-header"><div><b id="testTitle">Тест</b> · <span id="testCounter"></span></div><div id="testTimer" class="timer-display"></div></div>
+      <div class="progress-bar"><div class="progress-fill" id="testProgress"></div></div>
+      <div class="card"><div class="question-text" id="qText"></div><div id="qAnswerArea"></div><div id="qFeedback"></div><div class="row" style="margin-top:14px"><button class="btn btn-ghost" id="btnPrev" onclick="prevQuestion()">←</button><button class="btn btn-ghost" onclick="skipQuestion()">Пропустить</button><div class="spacer"></div><button class="btn btn-primary" id="btnCheck" onclick="checkAnswer()">Ответить</button><button class="btn btn-primary" id="btnNext" onclick="nextQuestion()" style="display:none">Далее →</button></div></div>
+    </section>
+
+    <section class="page" id="page-result">
+      <h1>Результат</h1>
+      <div class="result-hero" id="resultHero"><h2 id="res-percent">0%</h2><p id="res-label"></p></div>
+      <div class="grid grid-3" style="margin:16px 0">
+        <div class="card stat-card"><div class="stat-value" id="res-correct">0</div><div class="stat-label">Верно</div></div>
+        <div class="card stat-card"><div class="stat-value" style="color:var(--danger)" id="res-wrong">0</div><div class="stat-label">Ошибок</div></div>
+        <div class="card stat-card"><div class="stat-value" style="color:var(--muted)" id="res-skipped">0</div><div class="stat-label">Пропущено</div></div>
+      </div>
+      <div class="card" id="resultBreakdown"></div>
+      <div class="row" style="margin-top:12px"><button class="btn btn-primary" onclick="nav('startTest')">Ещё раз</button><button class="btn btn-ghost" onclick="nav('home')">Домой</button></div>
+    </section>
+
+    <!-- ================= КОНСПЕКТ ================= -->
+    <section class="page" id="page-notes">
+      <h1>📝 Конспект</h1>
+      <p class="sub">Соберите текст, схемы и фотографии в одном месте, а затем повторяйте материал карточками и самопроверкой.</p>
+      <div class="card">
+        <div class="form-row"><label>Дисциплина</label><input type="text" id="note-subject" placeholder="Например: Анатомия" list="note-subjects"></div>
+        <datalist id="note-subjects"></datalist>
+        <div class="form-row"><label>Загрузить документ</label><input type="file" id="notes-file" accept=".txt,.md,.pdf,.docx,.doc"></div>
+        <div class="form-row"><label>Добавить изображения, схемы и фотографии</label><input type="file" id="notes-images" accept="image/*" multiple><small style="color:var(--muted)">Можно выбрать несколько изображений. Они сохранятся вместе с конспектом на этом устройстве.</small></div>
+        <div id="notes-image-preview" class="notes-image-grid"></div>
+        <div class="form-row"><label>Текст конспекта</label><textarea id="notes-input" rows="12" placeholder="Вставьте текст лекции, добавьте определения, примеры и вопросы для самопроверки..."></textarea></div>
+        <div class="highlight-tools">
+          <button class="hl-btn" onclick="applyHighlight('yellow')">🟡 Важно</button>
+          <button class="hl-btn" onclick="applyHighlight('red')">🔴 Выучить</button>
+          <button class="hl-btn" onclick="applyHighlight('green')">🟢 Понял(а)</button>
+          <button class="hl-btn" onclick="clearHighlight()">🧹 Снять метки</button>
+        </div>
+        <div class="row notes-actions">
+          <button class="btn btn-primary" onclick="saveNote()">💾 Сохранить конспект</button>
+          <button class="btn btn-ghost" onclick="summarizeNotes()">✂️ Краткое резюме</button>
+          <button class="btn btn-ghost" onclick="makeFlashcards()">🗂 Карточки</button>
+          <button class="btn btn-ghost" onclick="studyNoteImages()">🖼 Учить изображения</button>
+          <button class="btn btn-ghost" onclick="startNotesQuiz()">🧠 Самопроверка</button>
+          <button class="btn btn-ghost" onclick="toggleNotesFocus()">⛶ Режим фокуса</button>
+          <button class="btn btn-ghost" onclick="copyNotesText()">Копировать</button>
+        </div>
+        <div id="notes-study-area" class="notes-study-area" style="display:none"></div>
+      </div>
+      <div class="card hidden" id="notes-result-card">
+        <h3>Краткое резюме</h3><div id="notes-summary" style="margin:10px 0"></div>
+        <h3 style="margin-top:12px">🔑 Ключевые слова</h3><div id="notes-keywords" style="margin:8px 0"></div>
+        <button class="btn btn-green" onclick="genTestFromNotes()" style="margin-top:10px">🧪 Создать тест</button>
+      </div>
+      <div class="card"><h3>Мои конспекты</h3><div id="saved-notes-list"></div></div>
+    </section>
+
+    <!-- ================= РАСПИСАНИЕ ================= -->
+    <section class="page" id="page-schedule">
+      <h1>🗓 Расписание</h1>
+      <p class="sub">Заполните предметы и время для каждого дня.</p>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn btn-primary btn-sm" onclick="fillWeekTemplate()">📋 Шаблон недели</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearSchedule()">🗑 Очистить</button>
+      </div>
+      <div id="schedule-list"></div>
+    </section>
+
+    <!-- ================= НАСТРОЙКИ ================= -->
+    <section class="page" id="page-settings">
+      <h1>⚙️ Настройки</h1>
+      <div class="card">
+        <div class="form-row"><label>Имя</label><input type="text" id="setUsername"></div>
+        <div class="row"><button class="btn btn-primary" onclick="saveSettings()">Сохранить</button><button class="btn btn-ghost" onclick="toggleTheme()">🎨 Сменить тему</button><button class="btn btn-ghost" onclick="exportAllData()">📦 Экспорт всех данных</button><button class="btn btn-ghost" onclick="importAllData()">📥 Импорт резервной копии</button><button class="btn btn-danger" onclick="resetAll()">🗑 Сбросить всё</button></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Нижняя навигация -->
+<nav id="bottom-nav"></nav>
+
+<!-- Модалка -->
+<div class="modal-overlay" id="modalOverlay"><div class="card" id="modalContent"></div></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   MIR.knowledge — Vanilla JS SPA
+   ============================================================ */
+const $ = (s,c=document) => c.querySelector(s);
+const $$ = (s,c=document) => [...c.querySelectorAll(s)];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let toastTimer;
+function toast(msg, type=''){
+  const el = $('#toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = 'toast', 2800);
+}
+
+/* ==================== ХРАНИЛИЩЕ ==================== */
+const DB = {
+  tests: [], results: [], brs: [], notes: [], schedule: [],
+  settings: { username:'Студент', theme:'light' }
+};
+function save(){
+  try{localStorage.setItem('mirk_db',JSON.stringify(DB));}
+  catch(e){console.error(e);toast('Не хватило места в хранилище. Уменьшите размер изображений или удалите старые конспекты.','error');}
+}
+function load(){
+  const raw = localStorage.getItem('mirk_db');
+  if(raw){ try{ Object.assign(DB, JSON.parse(raw)); }catch(e){ console.warn(e); } }
+}
+function resetAll(){
+  if(!confirm('Удалить ВСЕ данные?')) return;
+  localStorage.removeItem('mirk_db');
+  location.reload();
+}
+function toggleTheme(){
+  DB.settings.theme = DB.settings.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(DB.settings.theme); save();
+}
+function applyTheme(t){
+  document.body.classList.toggle('light', t === 'light');
+}
+
+/* ==================== НАВИГАЦИЯ ==================== */
+const PAGES = [
+  { id:'home', ico:'🏠', title:'Главная' },
+  { id:'brs', ico:'📓', title:'Дневник' },
+  { id:'tests', ico:'🧪', title:'Тесты' },
+  { id:'notes', ico:'📝', title:'Конспект' },
+  { id:'schedule', ico:'🗓', title:'Расписание' },
+  { id:'settings', ico:'⚙️', title:'Настройки' }
+];
+function buildNav(){
+  const nav = $('#bottom-nav');
+  nav.innerHTML = '<div class="side-brand"><div class="brand-mark">M<span>.</span></div><div><b>MIR<span>.knowledge</span></b><small>STUDENT WORKSPACE</small></div></div><div class="side-caption">РАБОЧЕЕ ПРОСТРАНСТВО</div>';
+  PAGES.forEach(p => {
+    const b = document.createElement('button');
+    b.dataset.page = p.id;
+    b.innerHTML = `<span class="ico">${p.ico}</span><span>${p.title}</span>`;
+    b.onclick = () => nav_page(p.id);
+    nav.appendChild(b);
+  });
+  const foot=document.createElement('div'); foot.className='side-footer'; foot.innerHTML='<span class="status-dot"></span><span>Локальное хранилище</span>'; nav.appendChild(foot);
+}
+function nav(page){nav_page(page);}
+
+function nav_page(page){
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $$('#bottom-nav button').forEach(b => b.classList.remove('active'));
+  const el = $('#page-' + page); if(el) el.classList.add('active');
+  const btn = $(`#bottom-nav button[data-page="${page}"]`); if(btn) btn.classList.add('active');
+  if(page === 'home') renderHome();
+  if(page === 'brs') renderBrs();
+  if(page === 'tests') renderTests();
+  if(page === 'startTest') renderStartConfig();
+  if(page === 'notes') renderSavedNotes();
+  if(page === 'schedule') renderSchedule();
+  if(page === 'settings') renderSettings();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ==================== ЧТЕНИЕ ФАЙЛОВ ==================== */
+async function readFileText(file){
+  const ext = file.name.split('.').pop().toLowerCase();
+  if(ext === 'docx'){
+    if(typeof mammoth === 'undefined') throw new Error('mammoth не загрузился');
+    const buf = await file.arrayBuffer();
+    const r = await mammoth.extractRawText({arrayBuffer:buf});
+    return r.value;
+  }
+  if(ext === 'txt' || ext === 'md') return await file.text();
+  if(ext === 'pdf'){
+    if(typeof pdfjsLib === 'undefined') throw new Error('pdf.js не загрузился');
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+    let full = '';
+    for(let i=1;i<=pdf.numPages;i++){
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      let lastY = null, lineBuf = '';
+      for(const item of content.items){
+        if(!item.str) continue;
+        const y = item.transform[5];
+        if(lastY !== null && Math.abs(y-lastY) > 3){ full += lineBuf.trimEnd()+'\n'; lineBuf = ''; }
+        lineBuf += item.str+' '; lastY = y;
+      }
+      full += lineBuf.trimEnd()+'\n\n';
+    }
+    return full;
+  }
+  throw new Error(`Формат .${ext} не поддерживается`);
+}
+
+/* ==================== ПАРСЕРЫ (как в MIRTEST) ==================== */
+function parseQuestionsFile(text){
+  let t = text.replace(/\r/g,'').replace(/=====\s*Page\s*\d+\s*=====/gi,'\n').replace(/\*\*/g,'').replace(/^\s*>\s?/gm,'').replace(/\\\./g,'.').replace(/\\-/g,'-').replace(/\\/g,'');
+  const all = []; const lines = t.split('\n');
+  for(const raw of lines){
+    const line = raw.trim(); if(!line) continue;
+    if(/^Модуль\s+\d+/i.test(line)) continue;
+    const m = line.match(/^\s*(\d{1,3})\s*[\.\)]\s*(.+)$/);
+    if(m) all.push({num:parseInt(m[1],10), text:m[2].trim()});
+    else if(all.length) all[all.length-1].text += ' '+line;
+  }
+  if(!all.length) return [];
+  const questions = []; let curQ = null; let lastVariantNum = 0;
+  function endsLikeQuestion(t){
+    t = t.trim();
+    return /\?\s*$/.test(t) || /:\s*$/.test(t) ||
+      /(?:называется|называют|является|являются|относятся|входят|влияют|нужны|происходит|осуществляется|приведите|укажите|выберите|зачем|что такое|какой|какая|какие|каково|каким|чем|почему)\b/i.test(t);
+  }
+  function decideType(item, prevQ, lastVar){
+    if(!prevQ) return 'question';
+    if(endsLikeQuestion(item.text)) return 'question';
+    if(prevQ.options.length === 0){
+      if(item.num === 1) return 'option';
+      return 'question';
+    }
+    if(item.num === 1) return 'question';
+    if(item.num === lastVar+1) return 'option';
+    return 'question';
+  }
+  for(const item of all){
+    const type = decideType(item, curQ, lastVariantNum);
+    if(type === 'question'){
+      if(curQ) questions.push(curQ);
+      curQ = {num:item.num, text:item.text, options:[]}; lastVariantNum = 0;
+    } else {
+      curQ.options.push({num:item.num, text:item.text}); lastVariantNum = item.num;
+    }
+  }
+  if(curQ) questions.push(curQ);
+  return questions.filter(q => q.text && q.text.length > 2);
+}
+
+function parseAnswersFile(text){
+  let t = text.replace(/\r/g,'').replace(/=====\s*Page\s*\d+\s*=====/gi,'\n').replace(/\*\*/g,'').replace(/^\s*>\s?/gm,'').replace(/\\\./g,'.').replace(/\\-/g,'-').replace(/\\/g,'');
+  const lines = t.split('\n'); const entries = [];
+  const re = /^\s*(\d{1,3})\s*[\.\)]\s*Правильный\s+ответ\s*[:.\-]?\s*(.+)$/i;
+  let cur = null;
+  for(const raw of lines){
+    const line = raw.trim(); if(!line) continue;
+    if(/^Модуль\s+\d+/i.test(line)) continue;
+    const m = line.match(re);
+    if(m){
+      if(cur) entries.push(cur);
+      cur = {num:parseInt(m[1],10), text:m[2].trim()};
+    } else if(cur){ cur.text += ' '+line; }
+  }
+  if(cur) entries.push(cur);
+  for(const e of entries){
+    const parsed = parseAnswerContent(e.text);
+    e.mode = parsed.mode; e.numbers = parsed.numbers; e.textAnswer = parsed.text; e.raw = e.text;
+  }
+  return entries;
+}
+
+function parseAnswerContent(str){
+  const s = str.trim();
+  let m = s.match(/^(\d+(?:\s*[,и]\s*\d+)+)\s*(?:\((.+)\))?\s*$/);
+  if(m){
+    const nums = m[1].split(/[,и]/).map(x=>parseInt(x.trim(),10)).filter(n=>!isNaN(n));
+    return {mode:'numbers', numbers:nums, text:(m[2]||'').trim()};
+  }
+  m = s.match(/^(\d{1,3})\s*[\.\)]\s*(.+)$/);
+  if(m) return {mode:'number', numbers:[parseInt(m[1],10)], text:m[2].trim()};
+  m = s.match(/^(\d{1,3})$/);
+  if(m) return {mode:'number', numbers:[parseInt(m[1],10)], text:''};
+  m = s.match(/^(.+?)\s*\((.+)\)\s*$/);
+  if(m) return {mode:'text', numbers:[], text:m[1].trim()+' ('+m[2].trim()+')'};
+  return {mode:'text', numbers:[], text:s};
+}
+
+function matchQuestionsWithAnswers(qList, aList){
+  const ansByQ = {}; for(const a of aList) ansByQ[a.num] = a;
+  return qList.map(q => {
+    const a = ansByQ[q.num];
+    let answerText = ''; let correctNums = []; let correctOptionsText = []; let status = 'ok';
+    if(!a){ status = 'noanswer'; }
+    else if(a.mode === 'number' || a.mode === 'numbers'){
+      correctNums = a.numbers;
+      for(const n of correctNums){
+        const opt = q.options.find(o => o.num === n);
+        if(opt) correctOptionsText.push(opt.text);
+      }
+      if(correctOptionsText.length !== correctNums.length) status = 'nooption';
+      answerText = correctOptionsText.join('; ');
+    } else {
+      answerText = a.text;
+      const norm = s => (s||'').toLowerCase().replace(/ё/g,'е').replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+      const key=norm(a.text), exactMatches=q.options.filter(o=>norm(o.text)===key);
+      if(exactMatches.length===1){correctNums=[exactMatches[0].num];correctOptionsText=[exactMatches[0].text];}
+      else status=exactMatches.length>1?'ambiguous':'check-key';
+    }
+    return {qNum:q.num, question:q.text, options:q.options, answerRaw:a?a.raw:'', answerMode:a?a.mode:'none', correctNums, answerText, status};
+  });
+}
+
+function pairsToQuestions(pairs){
+  return pairs.filter(p => p.status === 'ok' && p.correctNums.length).map(p => ({
+    id: uid(),
+    text: p.question,
+    type: p.correctNums.length > 1 ? 'multi' : 'single',
+    options: p.options.map(o => ({text:o.text, correct:p.correctNums.includes(o.num)})),
+    answer: p.answerText,
+    weight: 1, qNum: p.qNum
+  }));
+}
+
+/* ==================== БРС ДНЕВНИК (новая система) ==================== */
+function calcBrs(dis){
+  const classGrades=[];
+  for(const t of (dis.topics||[])){if(t.g1>=1&&t.g1<=5)classGrades.push(+t.g1);if(t.g2>=1&&t.g2<=5)classGrades.push(+t.g2);}
+  const moduleMeans=(dis.modules||[]).map(m=>{
+    const grades=(Array.isArray(m.grades)?m.grades:(m.grade>=1&&m.grade<=5?[+m.grade]:[]))
+      .map(Number).filter(g=>Number.isFinite(g)&&g>=1&&g<=5);
+    return grades.length?grades.reduce((a,b)=>a+b,0)/grades.length:null;
+  }).filter(v=>v!==null);
+  const classAvg=classGrades.length?classGrades.reduce((a,b)=>a+b,0)/classGrades.length:0;
+  const moduleAvg=moduleMeans.length?moduleMeans.reduce((a,b)=>a+b,0)/moduleMeans.length:0;
+  const avg5=classGrades.length&&moduleMeans.length?(classAvg+moduleAvg)/2:0;
+  const rts=Math.round(avg5*14*100)/100,bonus=Math.min(5,Math.max(0,+dis.bonus||0)),exam=Math.min(30,Math.max(0,+dis.exam||0)),total=rts+bonus+exam;
+  let grade='—',gradeClass='';
+  if(total>=86){grade='5 (отлично)';gradeClass='grade-5';}else if(total>=70){grade='4 (хорошо)';gradeClass='grade-4';}else if(total>=50){grade='3 (удовл.)';gradeClass='grade-3';}else if(total>0){grade='2 (неудовл.)';gradeClass='grade-2';}
+  return {avg5:+avg5.toFixed(2),classAvg:+classAvg.toFixed(2),moduleAvg:+moduleAvg.toFixed(2),rts,bonus,exam,total,grade,gradeClass,admitted:rts>=35&&exam>=15};
+}
+
+function renderBrs(){
+  const list = $('#brsList');
+  if(!DB.brs.length){ list.innerHTML = '<div class="empty">Дисциплин нет. Нажмите «Добавить дисциплину».</div>'; return; }
+  list.innerHTML = DB.brs.map(d => {
+    if(!Array.isArray(d.modules)) d.modules=[];
+    const c = calcBrs(d);
+    const cardClass = c.total >= 70 ? 'ok' : c.total >= 50 ? 'warn' : c.total > 0 ? 'danger' : '';
+    return `<div class="discipline-row" id="dis-${d.id}">
+      <div class="discipline-header" onclick="toggleDiscipline('${d.id}')">
+        <div>
+          <div class="name">${escapeHtml(d.name)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${c.admitted?'Допуск ✓':'Не допущен'} · ${d.topics?.length||0} тем</div>
+        </div>
+        <div class="avg-badge">${c.total}/105</div>
+      </div>
+      <div class="discipline-body">
+        <div style="margin-bottom:10px">
+          ${(d.topics||[]).length ? d.topics.map((t,i) => `
+            <div class="topic-item">
+              <div class="topic-name">📌 ${escapeHtml(t.name || 'Тема '+(i+1))}</div>
+              <div class="grades-row">
+                <div class="grade-box">Устно:
+                  <select onchange="updateTopicGrade('${d.id}',${i},'g1',this.value)">
+                    <option value="">—</option>
+                    ${[5,4,3,2,1].map(g=>`<option value="${g}" ${t.g1==g?'selected':''}>${g}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="grade-box">Письм.:
+                  <select onchange="updateTopicGrade('${d.id}',${i},'g2',this.value)">
+                    <option value="">—</option>
+                    ${[5,4,3,2,1].map(g=>`<option value="${g}" ${t.g2==g?'selected':''}>${g}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="grade-avg">Средняя: <b>${((t.g1&&t.g2)?((+t.g1 + +t.g2)/2).toFixed(1):t.g1||t.g2||'—')}</b></div>
+                <button class="btn btn-ghost btn-sm" onclick="removeTopic('${d.id}',${i})" style="color:var(--danger)">✕</button>
+              </div>
+            </div>`).join('') : '<div class="empty" style="padding:12px">Тем пока нет.</div>'}
+          <button class="btn btn-ghost btn-sm" onclick="addTopic('${d.id}')" style="margin-top:4px">➕ Тема</button>
+        </div>
+        <div style="margin:12px 0"><div class="row" style="justify-content:space-between;margin-bottom:8px"><b>📚 Модули</b><button class="btn btn-ghost btn-sm" onclick="addModule('${d.id}')">➕ Добавить модуль</button></div>
+          ${(d.modules||[]).length?d.modules.map((m,mi)=>{
+            if(!Array.isArray(m.grades)){m.grades=m.grade>=1&&m.grade<=5?[+m.grade]:[];}
+            const avg=m.grades.length?(m.grades.reduce((a,b)=>a+(+b),0)/m.grades.length).toFixed(2):'—';
+            return `<div class="topic-item">
+              <div class="grades-row">
+                <input type="text" value="${escapeHtml(m.name||'Модуль '+(mi+1))}" onchange="updateModule('${d.id}',${mi},'name',this.value)" style="flex:1;min-width:140px">
+                <span class="grade-avg">Средняя модуля: <b>${avg}</b></span>
+                <button class="btn btn-danger btn-sm" onclick="removeModule('${d.id}',${mi})">Удалить модуль</button>
+              </div>
+              <div class="grades-row" style="margin-top:9px">
+                ${(m.grades||[]).map((g,gi)=>`<div class="grade-box">Оценка ${gi+1}: <select onchange="updateModuleGrade('${d.id}',${mi},${gi},this.value)"><option value="">—</option>${[5,4,3,2,1].map(v=>`<option value="${v}" ${g==v?'selected':''}>${v}</option>`).join('')}</select><button class="btn btn-ghost btn-sm" onclick="removeModuleGrade('${d.id}',${mi},${gi})">✕</button></div>`).join('')}
+                <button class="btn btn-ghost btn-sm" onclick="addModuleGrade('${d.id}',${mi})">＋ Оценка за модуль</button>
+              </div>
+            </div>`;
+          }).join(''):'<div class="empty" style="padding:8px">Модули пока не добавлены.</div>'}
+        </div>
+        <div class="brs-summary"><span class="lbl">Средняя за занятия</span><span class="val">${c.classAvg||'—'}</span></div>
+        <div class="brs-summary"><span class="lbl">Средняя за модули</span><span class="val">${c.moduleAvg||'—'}</span></div>
+        <div class="brs-summary"><span class="lbl">Среднее двух показателей</span><span class="val">${c.avg5||'—'}</span></div>
+        <div class="brs-summary"><span class="lbl">Ртс (0–70) · среднее двух показателей × 14</span><span class="val">${c.rts}</span></div>
+        <div class="brs-summary"><span class="lbl">Бонус (0–5)</span><span class="val"><input type="number" min="0" max="5" value="${c.bonus}" onchange="updateDisciplineField('${d.id}','bonus',this.value)" style="width:60px;padding:3px 6px;font-size:12px;text-align:center"></span></div>
+        <div class="brs-summary"><span class="lbl">Рз/Рэ (0–30)</span><span class="val"><input type="number" min="0" max="30" value="${c.exam}" onchange="updateDisciplineField('${d.id}','exam',this.value)" style="width:60px;padding:3px 6px;font-size:12px;text-align:center"></span></div>
+        <div class="brs-summary" style="border-top:2px solid var(--border);margin-top:4px;padding-top:8px"><span class="lbl"><b>Рд (рейтинг)</b></span><span class="val" style="font-size:16px">${c.total} / 105</span></div>
+        <div class="brs-summary"><span class="lbl">Оценка по шкале</span><span class="val ${c.gradeClass}">${c.grade}</span></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn btn-ghost btn-sm" onclick="openEditDiscipline('${d.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDiscipline('${d.id}')">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDiscipline(id){
+  const row = $('#dis-'+id);
+  if(row) row.classList.toggle('open');
+}
+
+function openAddDiscipline(){
+  $('#modalContent').innerHTML = `
+    <h2>Добавить дисциплину</h2>
+    <div class="form-row"><label>Название</label><input type="text" id="brsName" placeholder="Например: Биохимия"></div>
+    <div class="form-row"><label>Бонус (0–5)</label><input type="number" id="brsBonus" value="0" min="0" max="5"></div>
+    <div class="form-row"><label>Рз/Рэ (0–30)</label><input type="number" id="brsExam" value="0" min="0" max="30"></div>
+    <div class="row"><button class="btn btn-primary" onclick="saveNewDiscipline()">Сохранить</button><button class="btn btn-ghost" onclick="closeModal()">Отмена</button></div>`;
+  $('#modalOverlay').classList.add('open');
+}
+function closeModal(){ $('#modalOverlay').classList.remove('open'); }
+function saveNewDiscipline(){
+  const name = $('#brsName').value.trim();
+  if(!name){ toast('Введите название','error'); return; }
+  DB.brs.push({id:uid(), name, topics:[{name:'Тема 1',g1:null,g2:null}], modules:[], bonus:+$('#brsBonus').value||0, exam:+$('#brsExam').value||0});
+  save(); closeModal(); renderBrs(); toast('Дисциплина добавлена','success');
+}
+function openEditDiscipline(id){
+  const d = DB.brs.find(x=>x.id===id); if(!d) return;
+  $('#modalContent').innerHTML = `
+    <h2>Редактировать</h2>
+    <div class="form-row"><label>Название</label><input type="text" id="brsName" value="${escapeHtml(d.name)}"></div>
+    <div class="row"><button class="btn btn-primary" onclick="saveEditDiscipline('${id}')">Сохранить</button><button class="btn btn-ghost" onclick="closeModal()">Отмена</button></div>`;
+  $('#modalOverlay').classList.add('open');
+}
+function saveEditDiscipline(id){
+  const d = DB.brs.find(x=>x.id===id); if(!d) return;
+  d.name = $('#brsName').value.trim() || d.name;
+  save(); closeModal(); renderBrs();
+}
+function deleteDiscipline(id){
+  if(!confirm('Удалить дисциплину со всеми темами?')) return;
+  DB.brs = DB.brs.filter(x=>x.id!==id); save(); renderBrs(); toast('Удалено','success');
+}
+function addTopic(disId){
+  const d = DB.brs.find(x=>x.id===disId); if(!d) return;
+  if(!d.topics) d.topics = [];
+  d.topics.push({name:'Тема '+(d.topics.length+1), g1:null, g2:null});
+  save(); renderBrs();
+  const row = $('#dis-'+disId); if(row) row.classList.add('open');
+}
+function addModule(disId){
+  const d=DB.brs.find(x=>x.id===disId);if(!d)return;if(!Array.isArray(d.modules))d.modules=[];
+  d.modules.push({name:'Модуль '+(d.modules.length+1),grades:[]});save();renderBrs();const row=$('#dis-'+disId);if(row)row.classList.add('open');
+}
+function updateModule(disId,idx,field,value){
+  const d=DB.brs.find(x=>x.id===disId);if(!d||!d.modules?.[idx])return;
+  d.modules[idx][field]=value.trim();save();renderBrs();const row=$('#dis-'+disId);if(row)row.classList.add('open');
+}
+function addModuleGrade(disId,idx){
+  const d=DB.brs.find(x=>x.id===disId);if(!d||!d.modules?.[idx])return;
+  const m=d.modules[idx];if(!Array.isArray(m.grades))m.grades=m.grade>=1&&m.grade<=5?[+m.grade]:[];
+  m.grades.push(null);save();renderBrs();const row=$('#dis-'+disId);if(row)row.classList.add('open');
+}
+function updateModuleGrade(disId,idx,gradeIdx,value){
+  const d=DB.brs.find(x=>x.id===disId);const m=d?.modules?.[idx];if(!m)return;
+  if(!Array.isArray(m.grades))m.grades=m.grade>=1&&m.grade<=5?[+m.grade]:[];
+  m.grades[gradeIdx]=value?+value:null;save();renderBrs();const row=$('#dis-'+disId);if(row)row.classList.add('open');
+}
+function removeModuleGrade(disId,idx,gradeIdx){
+  const d=DB.brs.find(x=>x.id===disId);const m=d?.modules?.[idx];if(!m||!Array.isArray(m.grades))return;
+  m.grades.splice(gradeIdx,1);save();renderBrs();const row=$('#dis-'+disId);if(row)row.classList.add('open');
+}
+function removeModule(disId,idx){
+  const d=DB.brs.find(x=>x.id===disId);if(!d||!d.modules)return;d.modules.splice(idx,1);save();renderBrs();const row=$('#dis-'+disId);if(row)row.classList.add('open');
+}
+function removeTopic(disId, idx){
+  const d = DB.brs.find(x=>x.id===disId); if(!d) return;
+  d.topics.splice(idx,1); save(); renderBrs();
+  const row = $('#dis-'+disId); if(row) row.classList.add('open');
+}
+function updateTopicGrade(disId, idx, field, val){
+  const d = DB.brs.find(x=>x.id===disId); if(!d) return;
+  d.topics[idx][field] = val ? +val : null; save(); renderBrs();
+  const row = $('#dis-'+disId); if(row) row.classList.add('open');
+}
+function updateDisciplineField(disId, field, val){
+  const d = DB.brs.find(x=>x.id===disId); if(!d) return;
+  d[field] = +val || 0; save(); renderBrs();
+  const row = $('#dis-'+disId); if(row) row.classList.add('open');
+}
+function exportBrs(){
+  const blob = new Blob([JSON.stringify(DB.brs,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'brs_export.json'; a.click();
+}
+function importBrs(){
+  const inp = document.createElement('input'); inp.type='file'; inp.accept='.json';
+  inp.onchange = e => {
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try{
+        const arr = JSON.parse(ev.target.result);
+        if(Array.isArray(arr)){ DB.brs = arr; save(); renderBrs(); toast('Импортировано '+arr.length+' дисциплин','success'); }
+      }catch(err){ toast('Ошибка импорта','error'); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ==================== ТЕСТЫ ==================== */
+let formQuestions = [];
+let testSession = null;
+
+function renderTests(){
+  const list = $('#tests-list');
+  if(!DB.tests.length){ list.innerHTML = '<div class="empty">Пока нет тестов.</div>'; return; }
+  list.innerHTML = DB.tests.map(t => `
+    <div class="doc-item">
+      <div><b>${escapeHtml(t.title)}</b><br><small style="color:var(--muted)">${t.questions.length} вопр. · ${t.timer}с</small></div>
+      <div class="row">
+        <button class="btn btn-primary btn-sm" onclick="quickStartTest('${t.id}')">▶</button>
+        <button class="btn btn-ghost btn-sm" onclick="showTestQuestions('${t.id}',false)">🔹</button>
+        <button class="btn btn-ghost btn-sm" onclick="showTestQuestions('${t.id}',true)">✅</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTest('${t.id}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function showTestQuestions(id, withAnswers){
+  const t = DB.tests.find(x=>x.id===id); if(!t) return;
+  const cont = $('#testStep1');
+  cont.innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">${escapeHtml(t.title)}</h2><button class="btn btn-ghost btn-sm" onclick="renderTests()">← Назад</button></div>
+    ${t.questions.map((q,i) => `
+      <div class="card" style="background:var(--panel-2)">
+        <strong>${i+1}. ${escapeHtml(q.text)}</strong>
+        <div style="margin-top:6px">
+          ${q.options.map((o,oi) => {
+            const isCorrect = q.options[oi]?.correct === true || (typeof q.options[oi] === 'string' && oi === q.correct);
+            return `<div class="option ${withAnswers&&isCorrect?'correct':''}" style="cursor:default;margin-bottom:4px"><strong>${String.fromCharCode(65+oi)}.</strong> ${escapeHtml(o)} ${withAnswers&&isCorrect?'✅':''}</div>`;
+          }).join('')}
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function newQuestion(){ return {id:uid(), text:'', options:['','','',''], correct:0}; }
+
+function openTestForm(editId=null){
+  $('#test-form-card').classList.remove('hidden');
+  $('#test-form-title').textContent = editId ? 'Редактирование' : 'Создание теста';
+  $('#test-edit-id').value = editId || '';
+  if(editId){
+    const t = DB.tests.find(x=>x.id===editId);
+    if(!t){ toast('Не найден','error'); return; }
+    $('#test-title').value = t.title;
+    $('#test-timer').value = t.timer;
+    formQuestions = JSON.parse(JSON.stringify(t.questions));
+  } else {
+    $('#test-title').value = '';
+    $('#test-timer').value = '30';
+    formQuestions = [newQuestion()];
+  }
+  renderFormQuestions();
+}
+
+function renderFormQuestions(){
+  const cont = $('#questions-container');
+  cont.innerHTML = formQuestions.map((q,qi) => `
+    <div class="card" style="background:var(--panel-2)">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <strong>Вопрос ${qi+1}</strong>
+        <button class="btn btn-danger btn-sm" onclick="delFormQuestion(${qi})">🗑</button>
+      </div>
+      <div class="form-row"><label>Текст</label><input type="text" data-qtext="${qi}" value="${escapeHtml(q.text)}"></div>
+      ${q.options.map((opt,oi) => `
+        <div class="row" style="margin-bottom:6px">
+          <input type="radio" name="correct-${qi}" data-qcorrect="${qi}" data-opt="${oi}" ${q.correct===oi?'checked':''} style="width:auto">
+          <input type="text" data-qopt="${qi}" data-opt="${oi}" value="${escapeHtml(opt)}" placeholder="Вариант ${String.fromCharCode(65+oi)}" style="flex:1">
+        </div>`).join('')}
+      <div class="row" style="margin-top:6px">
+        <button class="btn btn-ghost btn-sm" onclick="addFormOption(${qi})">+ Вариант</button>
+        <button class="btn btn-ghost btn-sm" onclick="delFormOption(${qi})">– Убрать</button>
+      </div>
+    </div>`).join('');
+  cont.oninput = e => {
+    const t = e.target;
+    if(t.dataset.qtext !== undefined) formQuestions[+t.dataset.qtext].text = t.value;
+    if(t.dataset.qopt !== undefined) formQuestions[+t.dataset.qopt].options[+t.dataset.opt] = t.value;
+  };
+  cont.onchange = e => {
+    const t = e.target;
+    if(t.dataset.qcorrect !== undefined) formQuestions[+t.dataset.qcorrect].correct = +t.dataset.opt;
+  };
+}
+function addFormQuestion(){ formQuestions.push(newQuestion()); renderFormQuestions(); }
+function delFormQuestion(qi){ formQuestions.splice(qi,1); renderFormQuestions(); }
+function addFormOption(qi){ if(formQuestions[qi].options.length < 5){ formQuestions[qi].options.push(''); renderFormQuestions(); } }
+function delFormOption(qi){ if(formQuestions[qi].options.length > 2){ formQuestions[qi].options.pop(); if(formQuestions[qi].correct >= formQuestions[qi].options.length) formQuestions[qi].correct = 0; renderFormQuestions(); } }
+
+function saveTest(){
+  const title = $('#test-title').value.trim();
+  if(!title){ toast('Введите название','error'); return; }
+  if(!formQuestions.length){ toast('Добавьте вопрос','error'); return; }
+  for(let i=0;i<formQuestions.length;i++){
+    const q = formQuestions[i];
+    if(!q.text.trim()){ toast(`Вопрос ${i+1}: пустой текст`,'error'); return; }
+    const filled = q.options.filter(o=>o.trim());
+    if(filled.length < 2){ toast(`Вопрос ${i+1}: минимум 2 варианта`,'error'); return; }
+  }
+  const payload = {
+    title, timer:+$('#test-timer').value,
+    questions: formQuestions.map(q => {
+      const opts=q.options.map((text,index)=>({text:text.trim(),correct:index===q.correct})).filter(o=>o.text);
+      const correctText=(q.options[q.correct]||'').trim();
+      return {id:q.id,text:q.text.trim(),type:'single',options:opts,answer:correctText,weight:1};
+    })
+  };
+  const editId = $('#test-edit-id').value;
+  if(editId){
+    const idx = DB.tests.findIndex(t=>t.id===editId);
+    if(idx>=0) DB.tests[idx] = {...DB.tests[idx], ...payload};
+    toast('Обновлено','success');
+  } else {
+    DB.tests.push({id:uid(), ...payload, created:Date.now()});
+    toast('Сохранено','success');
+  }
+  save(); closeTestForm(); renderTests();
+}
+function closeTestForm(){
+  $('#test-form-card').classList.add('hidden');
+  $('#test-edit-id').value = '';
+  formQuestions = [];
+}
+function deleteTest(id){
+  if(!confirm('Удалить тест?')) return;
+  DB.tests = DB.tests.filter(t=>t.id!==id); save(); renderTests(); toast('Удалено','success');
+}
+
+/* ==================== ИМПОРТ ТЕСТОВ ==================== */
+const pairState = { questionsText:null, answersText:null, pairs:[], docName:'' };
+
+function wireDropzone(dzId, inputId, which){
+  const dz = $(dzId); const inp = $(inputId);
+  dz.addEventListener('click', e => { if(e.target.tagName !== 'INPUT' && !e.target.closest('input')) inp.click(); });
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag');
+    if(e.dataTransfer.files[0]) handlePairFile(e.dataTransfer.files[0], which, dz, inp);
+  });
+  inp.addEventListener('change', e => {
+    if(e.target.files[0]) handlePairFile(e.target.files[0], which, dz, inp);
+  });
+}
+
+async function handlePairFile(file, which, dz, inp){
+  dz.innerHTML = `<span class="spinner"></span>Читаю...`;
+  try{
+    const text = await readFileText(file);
+    if(which === 'q') pairState.questionsText = text;
+    else pairState.answersText = text;
+    dz.innerHTML = `<h3>✅ ${escapeHtml(file.name)}</h3><details style="margin-top:6px;text-align:left"><summary style="cursor:pointer;color:var(--accent-2);font-size:11px">Превью</summary><div style="background:var(--panel-2);border-radius:6px;padding:8px;max-height:120px;overflow-y:auto;font-family:monospace;font-size:10px;white-space:pre-wrap;color:var(--muted);margin-top:4px">${escapeHtml(text.slice(0,1000))}</div></details>`;
+    dz.classList.add('loaded');
+    inp.value = '';
+  } catch(err){
+    dz.innerHTML = `<h3 style="color:var(--danger)">❌ ${escapeHtml(err.message)}</h3>`;
+  }
+}
+
+wireDropzone('#dzQuestions','#inputQuestions','q');
+wireDropzone('#dzAnswers','#inputAnswers','a');
+
+function runTestParse(){
+  if(!pairState.questionsText || !pairState.answersText){ toast('Загрузите оба файла','error'); return; }
+  const qList = parseQuestionsFile(pairState.questionsText);
+  const aList = parseAnswersFile(pairState.answersText);
+  if(!qList.length || !aList.length){ toast('Не удалось распознать','error'); return; }
+  const pairs = matchQuestionsWithAnswers(qList, aList);
+  const matched = pairs.filter(p=>p.status==='ok').length;
+  pairState.pairs = pairs;
+  pairState.docName = $('#testDocName').value.trim() || 'Импорт';
+  $('#pairMatched').textContent = matched + ' ✓';
+  $('#pairErrors').textContent = (pairs.length - matched) + ' проблем';
+  $('#pairTableWrap').innerHTML = `<table class="pair-table"><thead><tr><th>№</th><th>Вопрос</th><th>Ответ</th></tr></thead><tbody>${pairs.map(p => `<tr class="${p.status==='ok'?'matched':'unmatched'}"><td><span class="mark">${p.qNum}</span></td><td>${escapeHtml(p.question.slice(0,150))}</td><td>${p.status==='ok'?`<span class="correct-mark">✓</span> ${escapeHtml(p.answerText)}`:`<span class="badge danger">${p.status}</span>`}</td></tr>`).join('')}</tbody></table>`;
+  $('#testStep1').style.display = 'none';
+  $('#testStep2').style.display = 'block';
+  $('#tstep1').classList.add('done');
+  $('#tstep2').classList.add('active');
+  $('#tstep2').style.background = 'linear-gradient(90deg,var(--accent),#8f7bff)';
+  $('#tstep2').style.color = '#fff';
+}
+function testBackToStep1(){
+  $('#testStep1').style.display = 'block';
+  $('#testStep2').style.display = 'none';
+  $('#tstep2').classList.remove('active');
+  $('#tstep2').style.background = 'var(--panel-2)';
+  $('#tstep2').style.color = 'var(--muted)';
+}
+function testConfirm(){
+  const questions = pairsToQuestions(pairState.pairs);
+  if(!questions.length){ toast('Нет валидных пар','error'); return; }
+  DB.tests.push({id:uid(), title:pairState.docName, timer:30, questions, created:Date.now()});
+  save();
+  $('#testStep2').style.display = 'none';
+  $('#testStep3').style.display = 'block';
+  $('#pairDoneText').textContent = `Добавлено ${questions.length} вопросов`;
+  renderTests();
+  toast('Импортировано','success');
+}
+
+/* ==================== ПРОХОЖДЕНИЕ ТЕСТА ==================== */
+function quickStartTest(id){
+  const t = DB.tests.find(x=>x.id===id); if(!t) return;
+  testSession = {
+    title: t.title,
+    questions: t.questions.map(q => ({...q, options:[...q.options]})),
+    current: 0,
+    answers: t.questions.map(()=>({raw:null, checked:false})),
+    timer: t.timer,
+    timeLeft: t.timer,
+    timerHandle: null,
+    startTime: Date.now()
+  };
+  nav_page('test');
+  renderTestQuestion();
+}
+
+function renderStartConfig(){
+  const sel = $('#cfgTest');
+  sel.innerHTML = DB.tests.map(t => `<option value="${t.id}">${escapeHtml(t.title)} (${t.questions.length})</option>`).join('');
+  if(!DB.tests.length) sel.innerHTML = '<option>— нет тестов —</option>';
+}
+
+function startTest(){
+  const id = $('#cfgTest').value;
+  const t = DB.tests.find(x=>x.id===id);
+  if(!t || !t.questions.length){ toast('Выберите тест','error'); return; }
+  let pool = [...t.questions];
+  if($('#cfgOrder').value === 'random') pool = shuffleArr(pool);
+  const count = parseInt($('#cfgCount').value) || pool.length;
+  pool = pool.slice(0, count);
+  const shuffleOpts = $('#cfgShuffle').checked;
+  testSession = {
+    title: t.title,
+    questions: pool.map(q => ({...q, options: shuffleOpts ? shuffleArr([...q.options]) : [...q.options]})),
+    current: 0,
+    answers: pool.map(()=>({raw:null, checked:false})),
+    timer: t.timer,
+    timeLeft: t.timer,
+    timerHandle: null,
+    startTime: Date.now()
+  };
+  nav_page('test');
+  renderTestQuestion();
+}
+
+function renderTestQuestion(){
+  const s = testSession;
+  if(!s) return;
+  const q = s.questions[s.current];
+  const a = s.answers[s.current];
+  $('#testTitle').textContent = s.title;
+  $('#testCounter').textContent = `${s.current+1} / ${s.questions.length}`;
+  $('#testProgress').style.width = `${(s.current/s.questions.length)*100}%`;
+  $('#qText').textContent = q.text;
+  $('#qFeedback').innerHTML = '';
+  $('#btnCheck').style.display = a.checked ? 'none' : 'inline-flex';
+  $('#btnNext').style.display = a.checked ? 'inline-flex' : 'none';
+  $('#btnPrev').disabled = s.current === 0;
+  $('#qAnswerArea').innerHTML = `<div class="options">${q.options.map((o,i) => `<div class="option" data-idx="${i}" onclick="selectOption(this,${q.type==='multi'})">${escapeHtml(typeof o==='string'?o:o.text)}</div>`).join('')}</div>`;
+  if(a.checked) showFeedback();
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(testSession.timerHandle);
+  testSession.timeLeft = testSession.timer;
+  updateTimer();
+  testSession.timerHandle = setInterval(() => {
+    testSession.timeLeft--;
+    updateTimer();
+    if(testSession.timeLeft <= 0){
+      clearInterval(testSession.timerHandle);
+      // Время вышло — отмечаем как пропущенный
+      if(!testSession.answers[testSession.current].checked){
+        testSession.answers[testSession.current].checked = true;
+        testSession.answers[testSession.current].raw = null;
+        nextQuestion();
+      }
+    }
+  }, 1000);
+}
+
+function updateTimer(){
+  const left = Math.max(testSession.timeLeft, 0);
+  $('#testTimer').textContent = left + 'с';
+  $('#testTimer').style.color = left <= 5 ? 'var(--danger)' : 'var(--warn)';
+}
+
+function selectOption(el, multi){
+  if(testSession.answers[testSession.current].checked) return;
+  if(!multi){
+    el.parentElement.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+    el.classList.add('selected');
+  } else {
+    el.classList.toggle('selected');
+  }
+}
+
+function checkAnswer(){
+  const s = testSession, q = s.questions[s.current], a = s.answers[s.current];
+  const sel = Array.from(document.querySelectorAll('#qAnswerArea .option.selected')).map(o=>+o.dataset.idx);
+  if(!sel.length){ toast('Выберите вариант','error'); return; }
+  a.raw = q.type === 'multi' ? sel : sel[0];
+  const res = checkQuestionAnswer(a.raw, q);
+  a.correct = res.correct;
+  a.checked = true;
+  clearInterval(s.timerHandle);
+  $('#btnCheck').style.display = 'none';
+  $('#btnNext').style.display = 'inline-flex';
+  $('#btnNext').textContent = s.current < s.questions.length-1 ? 'Далее →' : 'Завершить ✓';
+  showFeedback();
+}
+
+function checkQuestionAnswer(raw,q){
+  const correctSet=q.options.map((o,i)=>typeof o==='string'?(i===q.correct):(o.correct===true)).map((v,i)=>v?i:-1).filter(i=>i>=0);
+  if(!correctSet.length)return {score:0,correct:false};
+  if(q.type==='multi'){const userSet=Array.isArray(raw)?[...new Set(raw)]:[],hits=userSet.filter(i=>correctSet.includes(i)).length,wrong=userSet.filter(i=>!correctSet.includes(i)).length;const score=Math.max(0,(hits-wrong)/correctSet.length);return {score,correct:score===1&&userSet.length===correctSet.length};}
+  const selected=Array.isArray(raw)?raw[0]:raw,correct=selected===correctSet[0];return {score:correct?1:0,correct};
+}
+
+function showFeedback(){
+  const s = testSession, q = s.questions[s.current], a = s.answers[s.current];
+  const correctText = q.options.filter((o,i)=>typeof o==='string'?i===q.correct:o.correct).map(o=>typeof o==='string'?o:o.text).join('; ');
+  const fb = $('#qFeedback');
+  if(a.correct){
+    fb.innerHTML = `<div class="feedback ok">✅ Верно!</div>`;
+    document.querySelectorAll('#qAnswerArea .option').forEach((el,i) => { if(typeof q.options[i]==='string'?i===q.correct:q.options[i].correct) el.classList.add('correct'); });
+  } else {
+    fb.innerHTML = `<div class="feedback bad">❌ Неверно<br>Правильный: <b>${escapeHtml(correctText)}</b></div>`;
+    document.querySelectorAll('#qAnswerArea .option').forEach((el,i) => {
+      if(typeof q.options[i]==='string'?i===q.correct:q.options[i].correct) el.classList.add('correct');
+      if(a.raw === i || (Array.isArray(a.raw) && a.raw.includes(i))) el.classList.add('incorrect');
+    });
+  }
+}
+
+function nextQuestion(){
+  clearInterval(testSession.timerHandle);
+  if(testSession.current < testSession.questions.length-1){
+    testSession.current++;
+    renderTestQuestion();
+  } else {
+    finishTest();
+  }
+}
+function prevQuestion(){
+  if(testSession.current > 0){ testSession.current--; renderTestQuestion(); }
+}
+function skipQuestion(){
+  const a = testSession.answers[testSession.current];
+  a.checked = true; a.raw = null; a.correct = false;
+  nextQuestion();
+}
+
+function finishTest(){
+  clearInterval(testSession.timerHandle);
+  const s = testSession;
+  let correct = 0;
+  s.questions.forEach((q,i) => { if(s.answers[i].correct) correct++; });
+  const total = s.questions.length;
+  const percent = Math.round(correct/total*100);
+  const wrong = total - correct - s.answers.filter(a=>!a.checked || a.raw === null).length;
+  const skipped = s.answers.filter(a=>!a.checked || a.raw === null).length;
+  $('#res-percent').textContent = percent + '%';
+  const hero = $('#resultHero');
+  hero.className = 'result-hero ' + (percent >= 71 ? 'ok' : 'bad');
+  $('#res-label').textContent = percent >= 71 ? 'Отлично! Материал усвоен' : 'Нужно повторить материал';
+  $('#res-correct').textContent = correct;
+  $('#res-wrong').textContent = wrong;
+  $('#res-skipped').textContent = skipped;
+  $('#resultBreakdown').innerHTML = s.questions.map((q,i) => {
+    const a = s.answers[i];
+    const correctText = q.options.filter((o,i)=>typeof o==='string'?i===q.correct:o.correct).map(o=>typeof o==='string'?o:o.text).join('; ');
+    return `<div class="card" style="background:var(--panel-2);border-left:3px solid ${a.correct?'var(--ok)':'var(--danger)'}">
+      <strong>${a.correct?'✅':'❌'} ${i+1}. ${escapeHtml(q.text)}</strong>
+      <div style="margin-top:6px;font-size:13px">
+        ${a.raw !== null ? `<div>Ваш: ${escapeHtml(Array.isArray(a.raw)?a.raw.map(i=>q.options[i].text).join('; '):q.options[a.raw]?.text||'—')}</div>` : '<div><em>нет ответа</em></div>'}
+        ${!a.correct ? `<div style="color:var(--ok)">Правильный: ${escapeHtml(correctText)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  DB.results.unshift({id:uid(),title:s.title,percent,date:new Date().toISOString(),
+    durationSeconds:Math.max(0,Math.round((Date.now()-s.startTime)/1000)),
+    answers:s.questions.map((q,i)=>({question:q.text,selected:s.answers[i].raw,correct:s.answers[i].correct,
+      correctOptions:q.options.map((o,oi)=>({text:typeof o==='string'?o:o.text,correct:typeof o==='string'?oi===q.correct:o.correct}))}))});
+  DB.results = DB.results.slice(0,50);
+  save();
+  nav_page('result');
+}
+
+function shuffleArr(a){
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+/* ==================== КОНСПЕКТ ==================== */
+function applyHighlight(color){
+  const el=$('#notes-input'),selected=el.value.slice(el.selectionStart,el.selectionEnd);
+  if(!selected){toast('Сначала выделите фрагмент текста','error');return;}
+  const icon=({yellow:'🟡',red:'🔴',green:'🟢'})[color]||'🟡';
+  el.setRangeText(`〔${icon} ${selected}〕`,el.selectionStart,el.selectionEnd,'select');el.focus();
+}
+function clearHighlight(){
+  const el=$('#notes-input'),start=el.selectionStart,end=el.selectionEnd;
+  if(start!==end){const selected=el.value.slice(start,end).replace(/〔(?:🟡|🔴|🟢) /g,'').replace(/〕/g,'');el.setRangeText(selected,start,end,'select');}
+  else el.value=el.value.replace(/〔(?:🟡|🔴|🟢) /g,'').replace(/〕/g,'');
+  el.focus();
+}
+const STOP_WORDS = new Set(['и','в','во','не','что','он','на','я','с','со','как','а','то','все','она','так','его','но','да','ты','к','у','же','вы','за','бы','по','только','ее','мне','было','вот','от','меня','еще','нет','о','из','ему','теперь','когда','даже','ну','вдруг','ли','если','уже','или','ни','быть','был','него','до','вас','нибудь','опять','уж','вам','ведь','там','потом','себя','ничего','ей','может','они','тут','где','есть','надо','ней','для','мы','тебя','их','чем','была','сам','чтоб','без','будто','чего','раз','тоже','себе','под','будет','ж','тогда','кто','этот','того','потому','этого','какой','совсем','ним','здесь','этом','один','почти','мой','тем','чтобы','нее','сейчас','были','куда','зачем','всех','никогда','можно','при','наконец','два','об','другой','хоть','после','над','больше','тот','через','эти','нас','про','всего','них','какая','много','разве','три','эту','моя','впрочем','хорошо','свою','этой','перед','иногда','лучше','чуть','том','нельзя','такой','им','более','всегда','конечно','всю','между']);
+
+function extractWords(text){
+  return (text.toLowerCase().match(/[а-яёa-z]{3,}/gi)||[]).filter(w=>!STOP_WORDS.has(w));
+}
+function wordFreq(words){
+  const m = new Map();
+  words.forEach(w => m.set(w,(m.get(w)||0)+1));
+  return m;
+}
+function splitSentences(text){
+  return text.replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(s=>s.length>15);
+}
+function scoreSentence(sentence, freqMap, maxFreq){
+  const words = extractWords(sentence);
+  if(!words.length) return 0;
+  let freqScore = 0;
+  words.forEach(w => freqScore += (freqMap.get(w)||0));
+  freqScore = freqScore / words.length / (maxFreq||1);
+  return freqScore + Math.min(sentence.length/200,1)*0.3 + words.filter(w=>w.length>7).length/Math.max(words.length,1)*0.3;
+}
+
+let lastSummary = null;
+let pendingNoteImages = [];
+let flashcardIndex = 0;
+let flashcardSide = 'front';
+
+function summarizeNotes(){
+  const text = $('#notes-input').value.trim();
+  if(text.length < 50){ toast('Введите текст (мин. 50 символов)','error'); return; }
+  const sentences = splitSentences(text);
+  if(!sentences.length){ toast('Не удалось разбить','error'); return; }
+  const allWords = extractWords(text);
+  const freqMap = wordFreq(allWords);
+  const maxFreq = Math.max(...freqMap.values(),1);
+  const keywords = [...freqMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10).map(([w])=>w);
+  const scored = sentences.map(s=>({s,score:scoreSentence(s,freqMap,maxFreq)})).sort((a,b)=>b.score-a.score);
+  const topN = Math.min(Math.max(5,Math.ceil(sentences.length*0.3)),10);
+  const top = scored.slice(0,topN);
+  const summary = top.map(t=>({s:t.s,idx:sentences.indexOf(t.s)})).sort((a,b)=>a.idx-b.idx).map(x=>x.s);
+  lastSummary = {text, summary, keywords, sentences};
+  $('#notes-result-card').classList.remove('hidden');
+  $('#notes-summary').innerHTML = '<ol style="padding-left:18px">'+summary.map(s=>`<li style="margin-bottom:6px">${escapeHtml(s)}</li>`).join('')+'</ol>';
+  $('#notes-keywords').innerHTML = keywords.map(k=>`<span class="tag">${escapeHtml(k)}</span>`).join('');
+  toast('Резюме готово','success');
+}
+
+$('#notes-file').onchange = async e => {
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const text = await readFileText(file);
+    $('#notes-input').value = text;
+    toast('Текст документа загружен','success');
+  } catch(err){ toast('Ошибка: '+err.message,'error'); }
+};
+
+$('#notes-images').onchange = async e => {
+  const files=[...e.target.files||[]];
+  for(const file of files){
+    if(!file.type.startsWith('image/')) continue;
+    if(file.size>5*1024*1024){toast('Изображение больше 5 МБ пропущено','error');continue;}
+    const dataUrl=await compressNoteImage(file);
+    pendingNoteImages.push({name:file.name,dataUrl});
+  }
+  renderPendingNoteImages();
+  e.target.value='';
+};
+function renderPendingNoteImages(){
+  const wrap=$('#notes-image-preview');if(!wrap)return;
+  wrap.innerHTML=pendingNoteImages.map((img,i)=>`<div class="notes-image-card"><img src="${img.dataUrl}" alt="${escapeHtml(img.name)}"><small>${escapeHtml(img.name)}</small><button class="btn btn-danger btn-sm" onclick="removePendingNoteImage(${i})">✕</button></div>`).join('');
+}
+async function compressNoteImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=reject;
+    reader.onload=()=>{
+      const image=new Image();
+      image.onerror=reject;
+      image.onload=()=>{
+        const scale=Math.min(1,1500/Math.max(image.width,image.height));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(image.width*scale));
+        canvas.height=Math.max(1,Math.round(image.height*scale));
+        const ctx=canvas.getContext('2d');
+        ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(image,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',0.78));
+      };
+      image.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function removePendingNoteImage(i){pendingNoteImages.splice(i,1);renderPendingNoteImages();}
+
+function saveNote(){
+  const text=$('#notes-input').value.trim();
+  const subject=$('#note-subject').value.trim()||'Без дисциплины';
+  if(!text&&!pendingNoteImages.length){toast('Добавьте текст или изображение','error');return;}
+  DB.notes.unshift({id:uid(),date:new Date().toISOString(),text,subject,
+    images:pendingNoteImages.slice(),summary:lastSummary?lastSummary.summary:[],keywords:lastSummary?lastSummary.keywords:[]});
+  DB.notes=DB.notes.slice(0,100);
+  pendingNoteImages=[];renderPendingNoteImages();save();renderSavedNotes();toast('Конспект сохранён','success');
+}
+
+function copyNotesText(){
+  const text=$('#notes-input').value;
+  if(!text.trim()){toast('Нечего копировать','error');return;}
+  navigator.clipboard?.writeText(text).then(()=>toast('Текст скопирован','success')).catch(()=>toast('Не удалось скопировать','error'));
+}
+function toggleNotesFocus(){
+  document.body.classList.toggle('notes-focus');
+  toast(document.body.classList.contains('notes-focus')?'Режим фокуса включён':'Режим фокуса выключен','success');
+}
+function makeFlashcards(){
+  const text=$('#notes-input').value.trim();
+  const sentences=splitSentences(text);
+  const words=extractWords(text);
+  const freq=wordFreq(words);
+  const keywords=[...freq.entries()].sort((a,b)=>b[1]-a[1]).slice(0,12).map(x=>x[0]);
+  if(!sentences.length||!keywords.length){toast('Добавьте содержательный текст конспекта','error');return;}
+  const cards=keywords.slice(0,10).map(word=>{
+    const sentence=sentences.find(x=>x.toLowerCase().includes(word))||'Найдите определение термина в конспекте.';
+    return {front:'Объясните термин: '+word,back:sentence};
+  });
+  window.activeNoteCards=cards;flashcardIndex=0;flashcardSide='front';renderFlashcard();
+}
+function renderFlashcard(){
+  const area=$('#notes-study-area'),cards=window.activeNoteCards||[];
+  if(!cards.length)return;
+  const c=cards[flashcardIndex];area.style.display='block';
+  area.innerHTML=`<div class="row" style="justify-content:space-between"><b>Карточка ${flashcardIndex+1} из ${cards.length}</b><button class="btn btn-ghost btn-sm" onclick="closeNotesStudy()">Закрыть</button></div>
+    <div class="study-flashcard" onclick="flipFlashcard()">${escapeHtml(flashcardSide==='front'?c.front:c.back)}</div>
+    <div class="row" style="justify-content:center;margin-top:12px"><button class="btn btn-ghost" onclick="previousFlashcard()">← Назад</button><button class="btn btn-primary" onclick="flipFlashcard()">Показать ответ</button><button class="btn btn-ghost" onclick="nextFlashcard()">Далее →</button></div>`;
+}
+function flipFlashcard(){flashcardSide=flashcardSide==='front'?'back':'front';renderFlashcard();}
+function nextFlashcard(){const cards=window.activeNoteCards||[];flashcardIndex=(flashcardIndex+1)%cards.length;flashcardSide='front';renderFlashcard();}
+function previousFlashcard(){const cards=window.activeNoteCards||[];flashcardIndex=(flashcardIndex-1+cards.length)%cards.length;flashcardSide='front';renderFlashcard();}
+function closeNotesStudy(){$('#notes-study-area').style.display='none';}
+function studyNoteImages(){
+  const images=pendingNoteImages;
+  if(!images.length){toast('Сначала добавьте изображения к конспекту','error');return;}
+  window.activeStudyImages=images;window.studyImageIndex=0;renderStudyImage();
+}
+function renderStudyImage(){
+  const images=window.activeStudyImages||[],i=window.studyImageIndex||0;
+  if(!images.length)return;
+  const img=images[i],area=$('#notes-study-area');area.style.display='block';
+  area.innerHTML=`<div class="row" style="justify-content:space-between"><b>Изображение ${i+1} из ${images.length}</b><button class="btn btn-ghost btn-sm" onclick="closeNotesStudy()">Закрыть</button></div>
+    <p style="margin:8px 0;color:var(--muted)">Рассмотрите схему, затем попробуйте воспроизвести её содержание по памяти.</p>
+    <div class="notes-image-card"><img src="${img.dataUrl}" alt="${escapeHtml(img.name||'Учебное изображение')}" style="height:min(55vh,520px);object-fit:contain"><small>${escapeHtml(img.name||'Изображение')}</small></div>
+    <div class="row" style="justify-content:center;margin-top:12px"><button class="btn btn-ghost" onclick="moveStudyImage(-1)">← Назад</button><button class="btn btn-primary" onclick="moveStudyImage(1)">Следующее →</button></div>`;
+}
+function moveStudyImage(step){
+  const images=window.activeStudyImages||[];if(!images.length)return;
+  window.studyImageIndex=(window.studyImageIndex+step+images.length)%images.length;renderStudyImage();
+}
+function startNotesQuiz(){
+  const text=$('#notes-input').value.trim(),sentences=splitSentences(text);
+  if(sentences.length<2){toast('Нужно больше текста для самопроверки','error');return;}
+  const questions=sentences.slice(0,8).map((sentence,i)=>({question:'Вспомните и перескажите ключевую мысль:',answer:sentence,done:false}));
+  window.notesQuiz={questions,index:0};renderNotesQuiz();
+}
+function renderNotesQuiz(){
+  const quiz=window.notesQuiz;if(!quiz)return;
+  const q=quiz.questions[quiz.index],area=$('#notes-study-area');area.style.display='block';
+  area.innerHTML=`<div class="row" style="justify-content:space-between"><b>Самопроверка ${quiz.index+1}/${quiz.questions.length}</b><button class="btn btn-ghost btn-sm" onclick="closeNotesStudy()">Закрыть</button></div>
+    <p style="margin:14px 0">Попробуйте ответить вслух или письменно, не подглядывая.</p>
+    <textarea id="notes-quiz-answer" rows="4" placeholder="Ваш ответ..."></textarea>
+    <button class="btn btn-primary" style="margin-top:8px" onclick="revealNotesQuizAnswer()">Показать ориентир ответа</button>
+    <div id="notes-quiz-reference"></div>
+    <div class="row" style="margin-top:10px"><button class="btn btn-ghost" onclick="nextNotesQuiz()">Следующий вопрос →</button></div>`;
+}
+function revealNotesQuizAnswer(){
+  const q=window.notesQuiz?.questions[window.notesQuiz.index];if(!q)return;
+  $('#notes-quiz-reference').innerHTML=`<div class="feedback ok">${escapeHtml(q.answer)}</div>`;
+}
+function nextNotesQuiz(){
+  const quiz=window.notesQuiz;if(!quiz)return;
+  quiz.index=(quiz.index+1)%quiz.questions.length;renderNotesQuiz();
+}
+function renderSavedNotes(){
+  const cont = $('#saved-notes-list');
+  if(!DB.notes.length){ cont.innerHTML = '<div class="empty">Нет конспектов</div>'; return; }
+  // Группируем по дисциплинам
+  const grouped = {};
+  DB.notes.forEach(n => {
+    const subj = n.subject || 'Без дисциплины';
+    if(!grouped[subj]) grouped[subj] = [];
+    grouped[subj].push(n);
+  });
+  cont.innerHTML = Object.entries(grouped).map(([subj, notes]) => `
+    <div style="margin-bottom:12px">
+      <h3 style="color:var(--accent-2);font-size:14px;margin-bottom:6px">📚 ${escapeHtml(subj)} <span class="badge">${notes.length}</span></h3>
+      ${notes.map(n => `
+        <div class="doc-item" style="flex-direction:column;align-items:stretch">
+          <div class="row" style="justify-content:space-between">
+            <small style="color:var(--muted)">${new Date(n.date).toLocaleDateString('ru-RU')}</small>
+            <button class="btn btn-danger btn-sm" onclick="delNote('${n.id}')">🗑</button>
+          </div>
+          <p style="margin-top:6px;font-size:13px">${escapeHtml((n.text||'').slice(0,180))}${(n.text||'').length>180?'…':''}</p>
+            ${n.images?.length?`<small style="color:var(--muted)">🖼 ${n.images.length} изображений</small>`:''}
+            <button class="btn btn-primary btn-sm" onclick="openSavedNote('${n.id}')">Открыть и изучать</button>
+          ${n.keywords?.length ? `<div style="margin-top:6px">${n.keywords.map(k=>`<span class="tag">${escapeHtml(k)}</span>`).join('')}</div>` : ''}
+        </div>`).join('')}
+    </div>`).join('');
+  // Обновляем datalist дисциплин
+  const dl = $('#note-subjects');
+  const subjects = [...new Set(DB.notes.map(n=>n.subject).filter(Boolean))];
+  dl.innerHTML = subjects.map(s=>`<option value="${escapeHtml(s)}">`).join('');
+}
+
+function openSavedNote(id){
+  const n=DB.notes.find(x=>x.id===id);if(!n)return;
+  $('#modalContent').innerHTML=`<div class="row" style="justify-content:space-between"><h2>${escapeHtml(n.subject||'Конспект')}</h2><button class="btn btn-ghost btn-sm" onclick="closeModal()">Закрыть</button></div>
+  <small style="color:var(--muted)">${new Date(n.date).toLocaleString('ru-RU')}</small>
+  <div style="white-space:pre-wrap;line-height:1.8;margin-top:14px;overflow-wrap:anywhere">${escapeHtml(n.text||'')}</div>
+  ${(n.images||[]).length?`<div class="notes-image-grid" style="margin-top:14px">${n.images.map(img=>`<div class="notes-image-card"><img src="${img.dataUrl}" alt="${escapeHtml(img.name||'Иллюстрация')}"><small>${escapeHtml(img.name||'Изображение')}</small></div>`).join('')}</div>`:''}
+  ${n.summary?.length?`<h3 style="margin-top:16px">Краткое резюме</h3><ul style="padding-left:20px">${n.summary.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:''}
+  <div class="row" style="margin-top:16px"><button class="btn btn-primary" onclick="loadNoteForStudy('${n.id}')">Учить этот конспект</button>${(n.images||[]).length?`<button class="btn btn-ghost" onclick="studySavedNoteImages('${n.id}')">Повторять изображения</button>`:''}</div>`;
+  $('#modalOverlay').classList.add('open');
+}
+function studySavedNoteImages(id){
+  const n=DB.notes.find(x=>x.id===id);if(!n||!n.images?.length)return;
+  window.activeStudyImages=n.images;window.studyImageIndex=0;closeModal();nav_page('notes');renderStudyImage();
+}
+function loadNoteForStudy(id){
+  const n=DB.notes.find(x=>x.id===id);if(!n)return;
+  $('#note-subject').value=n.subject||'';$('#notes-input').value=n.text||'';
+  pendingNoteImages=(n.images||[]).slice();renderPendingNoteImages();closeModal();nav_page('notes');
+  toast('Конспект открыт в учебном режиме','success');
+}
+function delNote(id){
+  if(!confirm('Удалить конспект?')) return;
+  DB.notes = DB.notes.filter(n=>n.id!==id); save(); renderSavedNotes(); toast('Удалено','success');
+}
+
+function genTestFromNotes(){
+  if(!lastSummary){ toast('Сначала сократите текст','error'); return; }
+  const {summary, keywords, sentences} = lastSummary;
+  const questions = [];
+  const pool = summary.length >= 3 ? summary : sentences;
+  pool.slice(0, Math.min(10, pool.length)).forEach(sentence => {
+    const words = extractWords(sentence);
+    if(!words.length) return;
+    let correctWord = words.find(w=>keywords.includes(w)) || words[0];
+    const distractors = keywords.filter(w=>w!==correctWord).slice(0,3);
+    while(distractors.length < 3){
+      const rnd = sentences[Math.floor(Math.random()*sentences.length)];
+      const rw = extractWords(rnd).find(w=>w!==correctWord && !distractors.includes(w));
+      if(rw) distractors.push(rw); else break;
+    }
+    if(distractors.length < 2) return;
+    const options = shuffleArr([correctWord, ...distractors.slice(0,3)]);
+    questions.push({id:uid(), text:`Ключевое слово: «${sentence.slice(0,100)}»?`, options: options.map(o=>({text:o, correct:o===correctWord})), type:'single'});
+  });
+  if(!questions.length){ toast('Не удалось сгенерировать','error'); return; }
+  DB.tests.push({id:uid(), title:'Тест по конспекту '+new Date().toLocaleDateString('ru-RU'), timer:30, questions, created:Date.now()});
+  save(); toast('Тест создан!','success'); nav_page('tests');
+}
+
+/* ==================== РАСПИСАНИЕ ==================== */
+const WEEK_DAYS = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+
+function renderSchedule(){
+  const cont = $('#schedule-list');
+  if(!DB.schedule.length){ DB.schedule = WEEK_DAYS.map(()=>[]); save(); }
+  cont.innerHTML = WEEK_DAYS.map((day,di) => {
+    const items = DB.schedule[di] || [];
+    return `<div class="week-day">
+      <h3>${day}</h3>
+      ${items.map((s,i) => `
+        <div class="schedule-slot ${s.done?'done':''}">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div class="sched-subject">${escapeHtml(s.subject||'—')}</div>
+              <div class="sched-time">${escapeHtml(s.start||'')}${s.end?'–'+escapeHtml(s.end):''}${s.hours?' ('+s.hours+' ч.)':''}</div>
+              ${s.hw?`<div class="sched-hw"><input type="checkbox" ${s.done?'checked':''} onchange="toggleHwDone(${di},${i},this.checked)" style="width:auto;margin-right:4px">ДЗ: ${escapeHtml(s.hw)}</div>`:''}
+            </div>
+            <div class="row">
+              <button class="btn btn-ghost btn-sm" onclick="editSlot(${di},${i})">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="delSlot(${di},${i})">🗑</button>
+            </div>
+          </div>
+        </div>`).join('') || '<div class="schedule-slot empty-slot">Нет занятий</div>'}
+      <button class="btn btn-ghost btn-sm" onclick="addSlot(${di})" style="margin-top:4px">+ Занятие</button>
+    </div>`;
+  }).join('');
+}
+
+function addSlot(di){
+  if(!DB.schedule[di]) DB.schedule[di] = [];
+  DB.schedule[di].push({subject:'', start:'', end:'', hours:1.5, hw:'', done:false});
+  save(); renderSchedule();
+}
+function editSlot(di, i){
+  const s = DB.schedule[di][i];
+  $('#modalContent').innerHTML = `
+    <h2>Редактировать</h2>
+    <div class="form-row"><label>Предмет</label><input type="text" id="s-subject" value="${escapeHtml(s.subject)}"></div>
+    <div class="grid grid-2">
+      <div class="form-row"><label>Начало</label><input type="time" id="s-start" value="${s.start}"></div>
+      <div class="form-row"><label>Конец</label><input type="time" id="s-end" value="${s.end}"></div>
+    </div>
+    <div class="form-row"><label>Часы</label><input type="number" id="s-hours" step="0.5" value="${s.hours}"></div>
+    <div class="form-row"><label>ДЗ</label><textarea id="s-hw" rows="2">${escapeHtml(s.hw||'')}</textarea></div>
+    <div class="row"><button class="btn btn-primary" onclick="saveSlot(${di},${i})">Сохранить</button><button class="btn btn-ghost" onclick="closeModal()">Отмена</button></div>`;
+  $('#modalOverlay').classList.add('open');
+}
+function saveSlot(di, i){
+  DB.schedule[di][i] = {
+    subject: $('#s-subject').value.trim(),
+    start: $('#s-start').value,
+    end: $('#s-end').value,
+    hours: +$('#s-hours').value || 0,
+    hw: $('#s-hw').value.trim(),
+    done: DB.schedule[di][i].done
+  };
+  save(); closeModal(); renderSchedule(); toast('Сохранено','success');
+}
+function delSlot(di, i){
+  if(!confirm('Удалить занятие?')) return;
+  DB.schedule[di].splice(i,1); save(); renderSchedule(); toast('Удалено','success');
+}
+function toggleHwDone(di, i, val){
+  DB.schedule[di][i].done = val; save(); renderSchedule();
+}
+function fillWeekTemplate(){
+  if(!confirm('Заполнить шаблоном? Текущие данные сохранятся.')) return;
+  if(!DB.schedule.length) DB.schedule = WEEK_DAYS.map(()=>[]);
+  WEEK_DAYS.forEach((_,di) => {
+    if(!DB.schedule[di]) DB.schedule[di] = [];
+    if(!DB.schedule[di].length){
+      DB.schedule[di].push({subject:'', start:'09:00', end:'10:30', hours:1.5, hw:'', done:false});
+      DB.schedule[di].push({subject:'', start:'10:45', end:'12:15', hours:1.5, hw:'', done:false});
+      DB.schedule[di].push({subject:'', start:'12:45', end:'14:15', hours:1.5, hw:'', done:false});
+      DB.schedule[di].push({subject:'', start:'14:30', end:'16:00', hours:1.5, hw:'', done:false});
+    }
+  });
+  save(); renderSchedule(); toast('Шаблон добавлен','success');
+}
+function clearSchedule(){
+  if(!confirm('Очистить расписание?')) return;
+  DB.schedule = WEEK_DAYS.map(()=>[]); save(); renderSchedule(); toast('Очищено','success');
+}
+
+/* ==================== ГЛАВНАЯ ==================== */
+function renderHome(){
+  const dateEl=$('#todayLabel'); if(dateEl) dateEl.textContent=new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+  $('#stat-tests').textContent = DB.tests.length;
+  $('#stat-questions').textContent = DB.tests.reduce((s,t)=>s+t.questions.length,0);
+  $('#stat-passed').textContent = DB.results.length;
+  const last = DB.results[0];
+  $('#lastResult').innerHTML = last
+    ? `<b>${escapeHtml(last.title)}</b> — <span class="badge ${last.percent>=71?'ok':'danger'}">${last.percent}%</span> · ${new Date(last.date).toLocaleString('ru-RU')}`
+    : 'Пока нет пройденных тестов';
+}
+
+/* ==================== НАСТРОЙКИ ==================== */
+function renderSettings(){
+  $('#setUsername').value = DB.settings.username;
+}
+function exportAllData(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mirk_backup.json';a.click();URL.revokeObjectURL(a.href);
+}
+function importAllData(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{
+      const data=JSON.parse(await file.text());
+      if(!data||typeof data!=='object'||!Array.isArray(data.tests)||!Array.isArray(data.brs)||!Array.isArray(data.notes))throw new Error('Неверный формат резервной копии');
+      if(!confirm('Заменить все текущие данные содержимым резервной копии?'))return;
+      Object.assign(DB,data);save();applyTheme(DB.settings?.theme||'dark');renderSettings();toast('Резервная копия восстановлена','success');
+    }catch(err){toast('Ошибка импорта: '+err.message,'error');}
+  };inp.click();
+}
+
+function saveSettings(){
+  DB.settings.username = $('#setUsername').value.trim() || 'Студент';
+  save(); toast('Сохранено','success');
+}
+
+/* ==================== ИНИЦИАЛИЗАЦИЯ ==================== */
+function init(){
+  load();
+  buildNav();
+  applyTheme(DB.settings.theme || 'dark');
+  nav_page('home');
+  $('#modalOverlay').addEventListener('click', e => {
+    if(e.target.id === 'modalOverlay') closeModal();
+  });
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<!-- ===== MIR AI+TIMER LAYER ===== -->
+<style>
+.lt-disp{font-size:56px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-1px;text-align:center;margin:8px 0}
+.lt-name{text-align:center;color:var(--accent-2);font-weight:700;min-height:22px}
+.lt-bar{height:10px;border-radius:8px;background:var(--panel-2);overflow:hidden;margin:6px 0}
+.lt-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:8px}
+.lt-row{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--panel-2);margin-bottom:6px;font-size:13px}
+.lt-row.cur{outline:2px solid var(--accent-2)}
+@media(max-width:760px){#bottom-nav{overflow-x:auto;justify-content:flex-start}#bottom-nav button{flex:none;min-width:64px}}
+</style>
+<script>
+(function(){
+const Q=s=>document.querySelector(s),QA=s=>[...document.querySelectorAll(s)];
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=s=>{s=Math.max(0,Math.round(s));const h=s/3600|0,m=String(s%3600/60|0).padStart(2,'0'),x=String(s%60).padStart(2,'0');return(h?h+':':'')+m+':'+x;};
+const dk=d=>{d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const ens=()=>{DB.sessions=DB.sessions||[];DB.plan=DB.plan||[];DB.decks=DB.decks||[];DB.focus=DB.focus||{};};
+
+/* ---------- страницы + навигация ---------- */
+Q('#page-settings').insertAdjacentHTML('beforebegin',`
+<section class="page" id="page-lessons"><h1>⏱ Таймер уроков</h1><p class="sub">Выберите урок, запустите таймер — время учёта пойдёт в статистику и серию дней.</p><div id="lessonsBody"></div></section>
+`);
+const si=PAGES.findIndex(p=>p.id==='settings');
+PAGES.splice(si,0,{id:'lessons',ico:'⏱',title:'Уроки'});
+const _np=nav_page;nav_page=function(p){_np(p);if(p==='lessons')renderLessons();};
+
+/* ================= ТАЙМЕР УРОКОВ ================= */
+const LT={name:'',target:0,start:0,acc:0,run:false,h:null,pi:-1};
+const el=()=>LT.acc+(LT.run?(Date.now()-LT.start)/1000:0);
+function ltSave(sec){ens();sec=Math.round(sec);if(sec<5||!LT.name)return;DB.sessions.unshift({id:uid(),name:LT.name,sec,date:Date.now()});DB.sessions=DB.sessions.slice(0,300);
+ const m=Math.round(sec/60);if(m>0){const k=dk(Date.now());DB.focus[k]=(DB.focus[k]||0)+m;}save();}
+function ltTick(){const t=el(),d=Q('#ltDisp');if(d){d.textContent=LT.target?fmt(LT.target-t):fmt(t);const b=Q('#ltBar');if(b)b.style.width=LT.target?Math.min(100,t/LT.target*100)+'%':'0%';}
+ document.title=LT.run?`${LT.name} · ${LT.target?fmt(LT.target-t):fmt(t)}`:'MIR.knowledge — БРС ОрГМУ 2026';
+ if(LT.target&&t>=LT.target)ltDone();}
+function ltDone(){clearInterval(LT.h);LT.run=false;ltSave(LT.target);const pi=LT.pi;toast('Урок «'+LT.name+'» завершён!','success');
+ try{window.fxConfetti&&fxConfetti(70);}catch(e){}
+ if(pi>=0&&pi+1<DB.plan.length){ltPlanGo(pi+1);}else{LT.pi=-1;LT.acc=0;LT.target=0;renderLessons();}}
+function ltGo(){if(!LT.run){const n=(Q('#ltName')?.value||LT.name).trim();if(!n){toast('Укажите название урока','error');return;}
+  if(!LT.acc||LT.name!==n){LT.name=n;LT.acc=0;LT.target=Math.max(0,(+Q('#ltMin')?.value||0))*60;}
+  LT.start=Date.now();LT.run=true;LT.h=setInterval(ltTick,250);}
+ else{LT.acc=el();LT.run=false;clearInterval(LT.h);}renderLessons();}
+function ltStop(){if(!LT.name)return;const t=LT.target?Math.min(el(),LT.target):el();clearInterval(LT.h);LT.run=false;ltSave(t);LT.acc=0;LT.target=0;LT.pi=-1;LT.name='';toast('Сессия сохранена','success');renderLessons();}
+function ltPlanGo(i){ens();const it=DB.plan[i];if(!it)return;clearInterval(LT.h);LT.pi=i;LT.name=it.name;LT.target=it.min*60;LT.acc=0;LT.start=Date.now();LT.run=true;LT.h=setInterval(ltTick,250);renderLessons();}
+window.ltGo=ltGo;window.ltStop=ltStop;window.ltPlanGo=ltPlanGo;
+window.ltAddPlan=()=>{ens();const n=Q('#plN').value.trim(),m=+Q('#plM').value;if(!n||!(m>0)){toast('Название и минуты','error');return;}DB.plan.push({id:uid(),name:n,min:m});save();renderLessons();};
+window.ltDelPlan=i=>{DB.plan.splice(i,1);save();renderLessons();};
+window.ltDelSes=id=>{DB.sessions=DB.sessions.filter(s=>s.id!==id);save();renderLessons();};
+window.ltPreset=(n,m)=>{Q('#ltName').value=n;if(m)Q('#ltMin').value=m;};
+function renderLessons(){ens();const names=[...new Set([...(DB.brs||[]).map(d=>d.name),...DB.sessions.map(s=>s.name)].filter(Boolean))];
+ const td=dk(Date.now()),today=DB.sessions.filter(s=>dk(s.date)===td),by={};today.forEach(s=>by[s.name]=(by[s.name]||0)+s.sec);
+ const mx=Math.max(1,...Object.values(by)),wk=DB.sessions.filter(s=>Date.now()-s.date<6048e5).reduce((a,s)=>a+s.sec,0);
+ const t=el();
+ Q('#lessonsBody').innerHTML=`<div class="card pomo-panel" id="pomoPanel">
+ <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+  <h3 style="margin:0">🍅 Помодоро</h3>
+  <button class="btn btn-ghost btn-sm" id="pomoToggleBtn" onclick="(function(){const b=document.getElementById('pomoPanelBody');const open=b.style.display!=='none';b.style.display=open?'none':'block';if(!open)fxPomo.show();else fxPomo.hide();})()">Показать / скрыть</button>
+ </div>
+ <div id="pomoPanelBody" style="display:none">
+  <div class="pomo-mode" id="pomoPanelMode">🍅 Работа</div>
+  <div class="pomo-time" id="pomoPanelTime">25:00</div>
+  <div class="pomo-controls">
+   <button class="btn btn-primary" id="pomoPanelGo" onclick="fxPomo.toggle()">▶ Старт</button>
+   <button class="btn btn-ghost btn-sm" onclick="fxPomo.reset()">↺ Сброс</button>
+   <button class="btn btn-ghost btn-sm" onclick="fxPomo.skip()">⏭ Пропуск</button>
+  </div>
+  <div class="pomo-ring-row">
+   <span class="fx-mini">Рингтон:</span>
+   <span id="pomoRingName" class="fx-mini">Стандартный звук</span>
+   <label class="btn btn-ghost btn-sm" style="cursor:pointer">🎵 Своя музыка<input type="file" accept="audio/*" style="display:none" onchange="if(this.files[0])setPomoRingtone(this.files[0])"></label>
+   <button class="btn btn-ghost btn-sm" onclick="previewPomoRingtone()">▶</button>
+   <button class="btn btn-ghost btn-sm" onclick="clearPomoRingtone()">✕</button>
+  </div>
+  <p class="fx-mini" style="margin-top:8px">Работа 25 мин · перерыв 5 мин. Рингтон можно выбрать из своих аудиофайлов на устройстве.</p>
+ </div>
+</div>
+<div class="grid grid-2"><div class="card"><div class="lt-name">${E(LT.name)||'Выберите урок'}${LT.pi>=0?' · план '+(LT.pi+1)+'/'+DB.plan.length:''}</div>
+ <div class="lt-disp" id="ltDisp">${LT.target?fmt(LT.target-t):fmt(t)}</div><div class="lt-bar"><i id="ltBar" style="width:${LT.target?Math.min(100,t/LT.target*100):0}%"></i></div>
+ <div class="form-row"><label>Название урока</label><input type="text" id="ltName" list="ltList" value="${E(LT.name)}" placeholder="Например: Анатомия"><datalist id="ltList">${names.map(n=>`<option value="${E(n)}">`).join('')}</datalist></div>
+ <div class="form-row"><label>Обратный отсчёт, минут (0 — секундомер)</label><input type="number" id="ltMin" min="0" value="${LT.target?LT.target/60:0}"></div>
+ <div class="row" style="margin-bottom:8px">${[25,45,90].map(m=>`<button class="btn btn-ghost btn-sm" onclick="ltPreset(Q_n(),${m})">${m} мин</button>`).join('')}</div>
+ <div class="row"><button class="btn btn-primary" onclick="ltGo()">${LT.run?'⏸ Пауза':(LT.acc?'▶ Продолжить':'▶ Старт')}</button><button class="btn btn-green" onclick="ltStop()">⏹ Завершить и сохранить</button></div></div>
+ <div class="card"><h3>📋 План занятий</h3>${DB.plan.length?DB.plan.map((p,i)=>`<div class="lt-row ${i===LT.pi?'cur':''}"><b>${i+1}.</b><span style="flex:1">${E(p.name)}</span><span>${p.min} мин</span><button class="btn btn-ghost btn-sm" onclick="ltPlanGo(${i})">▶</button><button class="btn btn-ghost btn-sm" onclick="ltDelPlan(${i})">✕</button></div>`).join(''):'<div class="empty">Добавьте уроки — они запустятся один за другим.</div>'}
+ <div class="row" style="margin-top:8px"><input type="text" id="plN" placeholder="Урок" style="flex:2"><input type="number" id="plM" placeholder="мин" style="flex:1" min="1"><button class="btn btn-primary btn-sm" onclick="ltAddPlan()">➕</button></div>
+ ${DB.plan.length?'<button class="btn btn-green btn-block" style="margin-top:8px" onclick="ltPlanGo(0)">▶ Запустить весь план</button>':''}</div></div>
+ <div class="card"><h3>📊 Сегодня по урокам · неделя: ${Math.round(wk/60)} мин</h3>${Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([n,s])=>`<div style="margin-bottom:8px"><div class="row"><span>${E(n)}</span><span class="spacer"></span><b>${fmt(s)}</b></div><div class="lt-bar"><i style="width:${s/mx*100}%"></i></div></div>`).join(''):'<div class="empty">Сегодня занятий пока нет</div>'}</div>
+ <div class="card"><h3>🕘 Последние сессии</h3>${DB.sessions.slice(0,8).map(s=>`<div class="lt-row"><span style="flex:1">${E(s.name)}</span><span class="fx-mini">${new Date(s.date).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><b>${fmt(s.sec)}</b><button class="btn btn-ghost btn-sm" onclick="ltDelSes('${s.id}')">✕</button></div>`).join('')||'<div class="empty">Пусто</div>'}</div>`;
+ try{
+  const body=document.getElementById('pomoPanelBody');
+  const pe=document.getElementById('pomo');
+  if(body && pe && pe.classList.contains('visible')){
+    body.style.display='block';
+  }
+  if(window.fxPomo && typeof window.fxPomo.redraw==='function') window.fxPomo.redraw();
+  else if(window.fxPomo && pe && pe.classList.contains('visible')) window.fxPomo.show();
+ }catch(e){}
+}
+window.Q_n=()=>Q('#ltName').value;
+
+})();
+</script>
+
+<!-- ===== MIR LAYER 3: латынь, маршрут, кафедры, диктофон ===== -->
+<style>
+body #pomo{bottom:46px}
+#authorTag{position:fixed;right:10px;bottom:8px;z-index:160;font-size:8px;font-weight:600;letter-spacing:0.5px;color:var(--muted);opacity:.55;pointer-events:none;user-select:none;line-height:1}
+#authorTag b{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent;font-size:8px}
+@media(max-width:760px){body #pomo{bottom:112px}#authorTag{bottom:76px;right:8px;font-size:7px}}
+.lx-chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.lx-chip{padding:5px 11px;border-radius:18px;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;font-size:12px}
+.lx-chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.lx-sec{font-size:12px;color:var(--accent-2);font-weight:700;margin:14px 0 6px;letter-spacing:.5px}
+.lx-w{display:grid;grid-template-columns:1.3fr 1fr 1.2fr;gap:8px;padding:8px 10px;border-radius:10px;background:var(--panel-2);margin-bottom:5px;font-size:14px;align-items:center}
+.lx-w b{font-weight:700}.lx-w i{color:var(--muted);font-style:normal}
+@media(max-width:640px){.lx-w{grid-template-columns:1fr;gap:2px}}
+.lx-card{min-height:200px;border-radius:18px;border:1px solid var(--border);background:var(--panel-2);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:26px;font-weight:700;cursor:pointer;transition:transform .3s;gap:6px}
+.lx-card small{font-size:15px;color:var(--muted);font-weight:500}
+.lx-card.flip{animation:lxflip .35s}
+@keyframes lxflip{0%{transform:rotateX(90deg)}100%{transform:none}}
+.lx-q{font-size:28px;font-weight:800;text-align:center;margin:10px 0 4px}
+.lx-opt{display:block;width:100%;text-align:left;padding:13px 14px;margin-bottom:8px;border-radius:12px;border:2px solid var(--border);background:var(--panel);color:var(--text);font-size:15px;cursor:pointer;transition:.15s}
+.lx-opt:hover{border-color:var(--accent)}
+.lx-opt.ok{border-color:var(--ok);background:rgba(74,222,181,.15);animation:fxpop .45s}
+.lx-opt.no{border-color:var(--danger);background:rgba(255,113,141,.15);animation:fxshake .4s}
+.lx-opt:disabled{cursor:default;opacity:1}
+.pl-card h3{display:flex;justify-content:space-between;gap:8px}
+.pl-bus{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:var(--panel-2);margin-bottom:6px;font-size:13px}
+.pl-num{background:var(--warn);color:#1a1a1a;font-weight:800;border-radius:8px;padding:2px 9px;min-width:38px;text-align:center}
+.pl-tag{display:inline-block;padding:3px 9px;border-radius:8px;background:var(--panel-2);font-size:12px;margin:2px 4px 2px 0}
+.pl-a{color:var(--accent-2);font-size:13px;text-decoration:none;margin-right:12px;font-weight:600}
+.rc-big{font-size:46px;font-weight:800;font-variant-numeric:tabular-nums;text-align:center;letter-spacing:-1px}
+.rc-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--danger);margin-right:8px;animation:rcp 1s infinite}
+@keyframes rcp{50%{opacity:.25}}
+.rc-meter{height:10px;border-radius:8px;background:var(--panel-2);overflow:hidden;margin:10px 0}
+.rc-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent-2),var(--warn),var(--danger));transition:width .08s}
+.rc-item{padding:12px;border-radius:12px;background:var(--panel-2);margin-bottom:8px}
+.rc-item audio{width:100%;margin-top:8px}
+</style>
+<div id="authorTag"><b>mirtest</b></div>
+<script>
+(function(){
+const Q=s=>document.querySelector(s),QA=s=>[...document.querySelectorAll(s)];
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const hms=s=>{s=Math.max(0,Math.round(s));return pad(s/3600|0)+':'+pad(s%3600/60|0)+':'+pad(s%60);};
+const ens=()=>{DB.routes=DB.routes||[];DB.kaf=DB.kaf||[];DB.latin=DB.latin||{tests:0,best:0,weak:{}};DB.latin.weak=DB.latin.weak||{};};
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const WORDS=[[2,"I склонение (f)","ala, ae f","а́ла","крыло"],[2,"I склонение (f)","columna, ae f","колу́мна","столб"],[2,"I склонение (f)","costa, ae f","ко́ста","ребро"],[2,"I склонение (f)","crista, ae f","кри́ста","гребень"],[2,"I склонение (f)","clavicula, ae f","клави́кула","ключица"],[2,"I склонение (f)","fovea, ae f","фо́веа","ямка, ямочка"],[2,"I склонение (f)","lingua, ae f","ли́нгва","язык (греч. gloss-)"],[2,"I склонение (f)","incisura, ae f","инцизу́ра","вырезка"],[2,"I склонение (f)","vertebra, ae f","ве́ртебра","позвонок (греч. spondyl-)"],[2,"I склонение (f)","scapula, ae f","ска́пула","лопатка"],[2,"I склонение (f)","substantia, ae f","субста́нциа","вещество"],[2,"I склонение (f)","vena, ae f","ве́на","вена"],[2,"II склонение","angulus, i m","а́нгулюс","угол"],[2,"II склонение","brachium, i n","бра́хиум","плечо"],[2,"II склонение","collum, i n","ко́ллум","шея, шейка"],[2,"II склонение","cranium, i n","кра́ниум","череп"],[2,"II склонение","ligamentum, i n","лигаме́нтум","связка (греч. desm-)"],[2,"II склонение","musculus, i m","му́скулюс","мышца (греч. myo-)"],[2,"II склонение","nucleus, i m","ну́клеус","ядро"],[2,"II склонение","ramus, i m","ра́мус","ветвь"],[2,"II склонение","sternum, i n","сте́рнум","грудина"],[2,"II склонение","tuberculum, i n","тубе́ркулюм","бугорок"],[2,"II склонение","ventriculus, i m","вентри́кулюс","желудочек"],[2,"III склонение","basis, is f","ба́зис","основание"],[2,"III склонение","canalis, is m","кана́лис","канал"],[2,"III склонение","caput, itis n","ка́пут","голова, головка (греч. cephal-)"],[2,"III склонение","corpus, oris n","ко́рпус","тело"],[2,"III склонение","dens, dentis m","дэнс","зуб (греч. odont-)"],[2,"III склонение","os, ossis n","ос","кость (греч. osteo-)"],[2,"IV склонение","arcus, us m","а́ркус","дуга, арка"],[2,"IV склонение","processus, us m","проце́ссус","отросток"],[2,"IV склонение","sinus, us m","си́нус","синус, пазуха"],[2,"IV склонение","plexus, us m","пле́ксус","сплетение"],[2,"V склонение","facies, ei f","фа́циес","лицо, поверхность"],[3,"I склонение (f)","concha, ae f","ко́нха","раковина"],[3,"I склонение (f)","fibula, ae f","фи́була","малоберцовая кость"],[3,"I склонение (f)","fossa, ae f","фо́сса","ямка"],[3,"I склонение (f)","glandula, ae f","гла́ндула","железа"],[3,"I склонение (f)","lamina, ae f","ла́мина","пластинка"],[3,"I склонение (f)","mandibula, ae f","манди́була","нижняя челюсть"],[3,"I склонение (f)","maxilla, ae f","макси́лла","верхняя челюсть"],[3,"I склонение (f)","medulla, ae f","меду́лла","мозг (spinalis — спинной)"],[3,"I склонение (f)","palpebra, ae f","пальпе́бра","веко"],[3,"I склонение (f)","fissura, ae f","фиссу́ра","щель"],[3,"I склонение (f)","sutura, ae f","суту́ра","шов"],[3,"I склонение (f)","tibia, ae f","ти́биа","большеберцовая кость"],[3,"II склонение","atrium, i n","а́триум","предсердие"],[3,"II склонение","cavum, i n","ка́вум","полость"],[3,"II склонение","cerebrum, i n","цере́брум","большой мозг"],[3,"II склонение","cerebellum, i n","церебе́ллум","мозжечок"],[3,"II склонение","digitus, i m","ди́гитус","палец"],[3,"II склонение","dorsum, i n","до́рсум","спина"],[3,"II склонение","labium, i n","ла́биум","губа"],[3,"II склонение","nasus, i m","на́зус","нос"],[3,"II склонение","nervus, i m","не́рвус","нерв"],[3,"II склонение","oculus, i m","о́кулюс","глаз"],[3,"II склонение","palatum, i n","пала́тум","нёбо"],[3,"II склонение","radius, i m","ра́диус","лучевая кость"],[3,"II склонение","septum, i n","се́птум","перегородка"],[3,"II склонение","sulcus, i m","су́лькус","борозда"],[3,"II склонение","calcaneus, i m","калька́неус","пяточная кость"],[3,"III–IV склонение","crus, cruris n","крус","ножка; голень"],[3,"III–IV склонение","pes, pedis m","пэс","нога, стопа"],[3,"III–IV склонение","cornu, us n","ко́рну","рог, рожок"],[3,"III–IV склонение","ductus, us m","ду́ктус","проток"],[3,"III–IV склонение","genu, us n","ге́ну","колено"],[3,"III–IV склонение","meatus, us m","меа́тус","проход, ход"],[4,"I–II склонение","albus, a, um","а́льбус","белый"],[4,"I–II склонение","dexter, tra, trum","де́кстер","правый"],[4,"I–II склонение","hyoideus, a, um","хиои́деус","подъязычный (кость)"],[4,"I–II склонение","hypoglossus, a, um","хипогло́ссус","подъязычный (нерв)"],[4,"I–II склонение","niger, gra, grum","ни́гер","чёрный"],[4,"I–II склонение","obliquus, a, um","обли́квус","косой"],[4,"I–II склонение","palatinus, a, um","палати́нус","нёбный"],[4,"I–II склонение","petrosus, a, um","петро́зус","каменистый"],[4,"I–II склонение","rectus, a, um","ре́ктус","прямой"],[4,"I–II склонение","ruber, bra, brum","ру́бер","красный"],[4,"I–II склонение","sinister, tra, trum","сини́стер","левый"],[4,"I–II склонение","sigmoideus, a, um","сигмои́деус","сигмовидный"],[4,"I–II склонение","thoracicus, a, um","тора́цикус","грудной"],[4,"I–II склонение","transversus, a, um","трансве́рзус","поперечный"],[4,"I–II склонение","venosus, a, um","вено́зус","венозный"],[4,"I–II склонение","osseus, a, um","о́ссеус","костный"],[4,"I–II склонение","zygomaticus, a, um","зигома́тикус","скуловой"],[4,"III склонение (гласный тип)","alaris, e","аля́рис","крыльный"],[4,"III склонение (гласный тип)","alveolaris, e","альвеоля́рис","альвеолярный"],[4,"III склонение (гласный тип)","articularis, e","артикуля́рис","суставной"],[4,"III склонение (гласный тип)","brevis, e","бре́вис","короткий"],[4,"III склонение (гласный тип)","cerebralis, e","церебра́лис","мозговой"],[4,"III склонение (гласный тип)","cervicalis, e","цервика́лис","шейный"],[4,"III склонение (гласный тип)","dentalis, e","дента́лис","зубной"],[4,"III склонение (гласный тип)","infraorbitalis, e","инфраорбита́лис","подглазничный"],[4,"III склонение (гласный тип)","lacrimalis, e","лакрима́лис","слёзный"],[4,"III склонение (гласный тип)","lateralis, e","латера́лис","боковой"],[4,"III склонение (гласный тип)","nasalis, e","наза́лис","носовой"],[4,"III склонение (гласный тип)","occipitalis, e","окципита́лис","затылочный"],[4,"III склонение (гласный тип)","orbitalis, e","орбита́лис","глазничный"],[4,"III склонение (гласный тип)","sphenoidalis, e","сфеноида́лис","клиновидный"],[4,"III склонение (гласный тип)","sublingualis, e","суб́лингва́лис","подъязычный"],[4,"III склонение (гласный тип)","vertebralis, e","вертебра́лис","позвоночный"],[5,"I–II склонение","auditivus, a, um","аудити́вус","слуховой"],[5,"I–II склонение","cavernosus, a, um","каверно́зус","пещеристый"],[5,"I–II склонение","cavus, a, um","ка́вус","полый"],[5,"I–II склонение","cutaneus, a, um","кута́неус","кожный"],[5,"I–II склонение","externus, a, um","эксте́рнус","наружный"],[5,"I–II склонение","hepaticus, a, um","хепа́тикус","печёночный"],[5,"I–II склонение","internus, a, um","инте́рнус","внутренний"],[5,"I–II склонение","laryngeus, a, um","ларинге́ус","гортанный"],[5,"I–II склонение","latus, a, um","ля́тус","широкий"],[5,"I–II склонение","longus, a, um","ло́нгус","длинный"],[5,"I–II склонение","medius, a, um","ме́диус","средний"],[5,"I–II склонение","pharyngeus, a, um","фаринге́ус","глоточный"],[5,"I–II склонение","profundus, a, um","профу́ндус","глубокий"],[5,"I–II склонение","pterygoideus, a, um","птеригои́деус","крыловидный"],[5,"I–II склонение","mastoideus, a, um","мастои́деус","сосцевидный"],[5,"I–II склонение","trapezoideus, a, um","трапецои́деус","трапециевидный"],[5,"I–II склонение","squamosus, a, um","сквамо́зус","чешуйчатый"],[5,"III склонение (гласный тип)","auricularis, e","аурикуля́рис","ушной"],[5,"III склонение (гласный тип)","communis, e","комму́нис","общий"],[5,"III склонение (гласный тип)","dorsalis, e","дорса́лис","спинной, тыльный"],[5,"III склонение (гласный тип)","ethmoidalis, e","этмоида́лис","решетчатый"],[5,"III склонение (гласный тип)","frontalis, e","фронта́лис","лобный"],[5,"III склонение (гласный тип)","mandibularis, e","мандибуля́рис","нижнечелюстной"],[5,"III склонение (гласный тип)","maxillaris, e","максилля́рис","верхнечелюстной"],[5,"III склонение (гласный тип)","muscularis, e","мускуля́рис","мышечный"],[5,"III склонение (гласный тип)","parietalis, e","париета́лис","теменной"],[5,"III склонение (гласный тип)","temporalis, e","темпора́лис","височный"],[5,"Сравнительная степень (III скл., согл. тип)","anterior, ius","анте́риор","передний"],[5,"Сравнительная степень (III скл., согл. тип)","inferior, ius","инфе́риор","нижний"],[5,"Сравнительная степень (III скл., согл. тип)","posterior, ius","посте́риор","задний"],[5,"Сравнительная степень (III скл., согл. тип)","superior, ius","супе́риор","верхний"],[5,"Сравнительная степень (III скл., согл. тип)","maior, ius","ма́йор","большой"],[5,"Сравнительная степень (III скл., согл. тип)","minor, minus","ми́нор","малый"],[6,"Существительные II склонения","caecum, i n","це́кум","слепая кишка"],[6,"Существительные II склонения","colon, i n","ко́лон","ободочная кишка"],[6,"Существительные II склонения","duodenum, i n","дуоде́нум","двенадцатиперстная кишка"],[6,"Существительные II склонения","ileum, i n","и́леум","подвздошная кишка"],[6,"Существительные II склонения","intestinum, i n","интести́нум","кишка, кишечник"],[6,"Существительные II склонения","rectum, i n","ре́ктум","прямая кишка"],[6,"Прилагательные III склонения","biceps, itis","би́цепс","двуглавый"],[6,"Прилагательные III склонения","triceps, pitis","три́цепс","трёхглавый"],[6,"Прилагательные III склонения","quadriceps, pitis","квадри́цепс","четырёхглавый"],[6,"Прилагательные III склонения","simplex, icis","си́мплекс","простой"],[6,"Прилагательные III склонения","teres, teretis","те́рес","круглый"],[7,"Мышцы-исполнители (III скл., m)","abductor, oris m","абду́ктор","отводящая мышца"],[7,"Мышцы-исполнители (III скл., m)","adductor, oris m","адду́ктор","приводящая мышца"],[7,"Мышцы-исполнители (III скл., m)","depressor, oris m","депре́ссор","опускающая мышца"],[7,"Мышцы-исполнители (III скл., m)","levator, oris m","лева́тор","поднимающая мышца"],[7,"Мышцы-исполнители (III скл., m)","dilatator, oris m","дилята́тор","расширяющая мышца"],[7,"Мышцы-исполнители (III скл., m)","extensor, oris m","эксте́нзор","мышца-разгибатель"],[7,"Мышцы-исполнители (III скл., m)","flexor, oris m","фле́ксор","мышца-сгибатель"],[7,"Мышцы-исполнители (III скл., m)","sphincter, eris m","сфи́нктер","сфинктер"],[7,"Мышцы-исполнители (III скл., m)","rotator, oris m","рота́тор","вращающая мышца"],[7,"Мышцы-исполнители (III скл., m)","tensor, oris m","те́нзор","напрягающая мышца"],[7,"Важные исключения рода","os, ossis n","ос","кость"],[7,"Важные исключения рода","os, oris n","ос","рот"],[7,"Важные исключения рода","cor, cordis n","кор","сердце"],[7,"Важные исключения рода","tuber, eris n","ту́бер","бугор"],[7,"Важные исключения рода","mater, tris f","ма́тер","мозговая оболочка"],[7,"Важные исключения рода","gaster, tris f","га́стер","желудок"],[7,"Важные исключения рода","atlas, atlantis m","а́тлас","атлант"],[7,"Важные исключения рода","axis, is m","а́ксис","ось, II шейный позвонок"],[7,"Важные исключения рода","coccyx, ygis m","ко́кцикс","копчик"],[7,"Важные исключения рода","hallux, ucis m","ха́ллюкс","большой палец стопы"],[7,"Важные исключения рода","larynx, ngis m","ля́ринкс","гортань"],[7,"Важные исключения рода","margo, inis m","ма́рго","край"],[7,"Важные исключения рода","pharynx, ngis m","фа́ринкс","глотка"],[7,"Важные исключения рода","sanguis, inis m","са́нгвис","кровь"],[7,"Важные исключения рода","tendo, inis m","те́ндо","сухожилие"],[7,"Важные исключения рода","thorax, acis m","то́ракс","грудная клетка"],[7,"Важные исключения рода","pancreas, atis n","па́нкреас","поджелудочная железа"],[7,"Важные исключения рода","vas, vasis n","вас","сосуд (Pl. vasa, vasorum)"],[7,"Важные исключения рода","ren, renis m","рэн","почка"],[7,"Важные исключения рода","lien, lienis m","ли́эн","селезёнка"],[8,"Мужской род","apex, icis m","а́пекс","верхушка, кончик"],[8,"Мужской род","cortex, icis m","ко́ртекс","кора"],[8,"Мужской род","pulmo, onis m","пу́льмо","лёгкое"],[8,"Мужской род","pollex, icis m","по́ллекс","большой палец руки"],[8,"Женский род","articulatio, onis f","артикуля́цио","сустав"],[8,"Женский род","auris, is f","а́урис","ухо"],[8,"Женский род","cartilago, inis f","картиля́го","хрящ"],[8,"Женский род","cervix, icis f","це́рвикс","шея; шейка"],[8,"Женский род","cutis, is f","ку́тис","кожа"],[8,"Женский род","extremitas, atis f","экстре́митас","конец, конечность"],[8,"Женский род","frons, frontis f","фронс","лоб"],[8,"Женский род","pars, partis f","парс","часть"],[8,"Женский род","radix, icis f","ра́дикс","корень"],[8,"Женский род","regio, onis f","ре́гио","область"],[8,"Женский род","pelvis, is f","пе́львис","таз"],[8,"Средний род","abdomen, inis n","абдо́мен","живот"],[8,"Средний род","hepar, atis n","хе́пар","печень"],[8,"Средний род","femur, oris n","фе́мур","бедро"],[8,"Средний род","pectus, oris n","пе́ктус","грудь"],[8,"Средний род","foramen, inis n","фора́мен","отверстие"],[8,"Средний род","systema, atis n","систе́ма","система"],[8,"Средний род","zygoma, atis n","зиго́ма","скула"],[9,"I–II склонение","atrophia, ae f","атрофи́а","атрофия"],[9,"I–II склонение","cysta, ae f","ци́ста","киста"],[9,"I–II склонение","diabetes, ae m","диабе́тес","диабет"],[9,"I–II склонение","gangraena, ae f","гангре́на","гангрена"],[9,"I–II склонение","fractura, ae f","фракту́ра","перелом"],[9,"I–II склонение","cancer, cri m","ка́нцер","рак"],[9,"I–II склонение","uterus, i m","у́терус","матка"],[9,"I–II склонение","vitium, i n","ви́циум","порок"],[9,"III–IV склонение","coma, atis n","ко́ма","кома"],[9,"III–IV склонение","diagnosis, is f","диа́гнозис","диагноз"],[9,"III–IV склонение","eczema, atis n","экце́ма","экзема"],[9,"III–IV склонение","glaucoma, atis n","глауко́ма","глаукома"],[9,"III–IV склонение","haematoma, atis n","хемато́ма","гематома"],[9,"III–IV склонение","neoplasma, atis n","неопла́зма","новообразование"],[9,"III–IV склонение","oedema, atis n","эде́ма","отёк"],[9,"III–IV склонение","paralysis, is f","пара́лизис","паралич"],[9,"III–IV склонение","paresis, is f","па́резис","парез"],[9,"III–IV склонение","rete, is n","ре́тэ","сеть"],[9,"III–IV склонение","trauma, atis n","тра́вма","травма"],[9,"III–IV склонение","ulcus, eris n","у́лькус","язва"],[9,"III–IV склонение","vulnus, eris n","ву́льнус","рана"],[9,"III–IV склонение","abscessus, us m","абсце́ссус","абсцесс"],[9,"Прилагательные","acutus, a, um","аку́тус","острый"],[9,"Прилагательные","benignus, a, um","бени́гнус","доброкачественный"],[9,"Прилагательные","chronicus, a, um","хро́никус","хронический"],[9,"Прилагательные","diabeticus, a, um","диабе́тикус","диабетический"],[9,"Прилагательные","lymphaticus, a, um","лимфа́тикус","лимфатический"],[9,"Прилагательные","malignus, a, um","мали́гнус","злокачественный"],[9,"Прилагательные","nervosus, a, um","нерво́зус","нервный"],[9,"Прилагательные","purulentus, a, um","пуруле́нтус","гнойный"],[9,"Прилагательные","subacutus, a, um","субаку́тус","подострый"],[9,"Прилагательные","toxicus, a, um","то́ксикус","токсический"],[9,"Прилагательные","traumaticus, a, um","травма́тикус","травматический"],[9,"Прилагательные","ulcerosus, a, um","ульцеро́зус","язвенный"],[9,"Прилагательные","centralis, e","центра́лис","центральный"],[9,"Прилагательные","cerebellaris, e","церебелля́рис","мозжечковый"],[9,"Прилагательные","clinicalis, e","клиника́лис","клинический"],[9,"Прилагательные","infantilis, e","инфанти́лис","детский"],[9,"Прилагательные","juvenilis, e","ювени́лис","юношеский"],[9,"Прилагательные","senilis, e","сени́лис","старческий"],[9,"Прилагательные","superficialis, e","суперфициа́лис","поверхностный"],[10,"Причастия настоящего времени (III скл., согл. тип)","abducens, ntis","абду́ценс","отводящий"],[10,"Причастия настоящего времени (III скл., согл. тип)","ascendens, ntis","асце́нденс","восходящий"],[10,"Причастия настоящего времени (III скл., согл. тип)","adducens, ntis","адду́ценс","приводящий"],[10,"Причастия настоящего времени (III скл., согл. тип)","descendens, ntis","десце́нденс","нисходящий"],[10,"Причастия настоящего времени (III скл., согл. тип)","deformans, ntis","дефо́рманс","деформирующий"],[10,"Причастия настоящего времени (III скл., согл. тип)","afferens, entis","а́фференс","приносящий"],[10,"Причастия настоящего времени (III скл., согл. тип)","efferens, ntis","э́фференс","выносящий"],[10,"Причастия настоящего времени (III скл., согл. тип)","comitans, ntis","ко́митанс","сопутствующий"],[10,"Причастия настоящего времени (III скл., согл. тип)","intermittens, ntis","интерми́ттенс","прерывистый"],[10,"Причастия настоящего времени (III скл., согл. тип)","latens, ntis","ля́тенс","латентный, скрытый"],[10,"Причастия настоящего времени (III скл., согл. тип)","migrans, ntis","ми́гранс","блуждающий"],[10,"Причастия настоящего времени (III скл., согл. тип)","penetrans, ntis","пене́транс","проникающий"],[10,"Причастия настоящего времени (III скл., согл. тип)","perforans, ntis","перфо́ранс","прободающий"],[10,"Причастия настоящего времени (III скл., согл. тип)","permanens, ntis","перма́ненс","постоянный"],[10,"Причастия настоящего времени (III скл., согл. тип)","prominens, ntis","про́миненс","выступающий"],[10,"Причастия настоящего времени (III скл., согл. тип)","recurrens, ntis","реку́рренс","возвратный"],[10,"Причастия прошедшего времени (I–II скл.)","acquisitus, a, um","аквизи́тус","приобретённый"],[10,"Причастия прошедшего времени (I–II скл.)","apertus, a, um","апе́ртус","открытый"],[10,"Причастия прошедшего времени (I–II скл.)","circumflexus, a, um","циркумфле́ксус","огибающий"],[10,"Причастия прошедшего времени (I–II скл.)","clausus, a, um","кля́узус","закрытый"],[10,"Причастия прошедшего времени (I–II скл.)","compactus, a, um","компа́ктус","плотный"],[10,"Причастия прошедшего времени (I–II скл.)","disseminatus, a, um","диссемина́тус","рассеянный"],[10,"Причастия прошедшего времени (I–II скл.)","compositus, a, um","компози́тус","сложный"],[10,"Причастия прошедшего времени (I–II скл.)","mixtus, a, um","ми́кстус","смешанный"],[10,"Причастия прошедшего времени (I–II скл.)","complicatus, a, um","комплика́тус","осложнённый"],[10,"Причастия прошедшего времени (I–II скл.)","congenitus, a, um","конге́нитус","врождённый"],[10,"Причастия прошедшего времени (I–II скл.)","concisus, a, um","конци́зус","резаный"],[10,"Причастия прошедшего времени (I–II скл.)","perforatus, a, um","перфора́тус","продырявленный"],[10,"Причастия прошедшего времени (I–II скл.)","punctus, a, um","пу́нктус","колотый"],[10,"Причастия прошедшего времени (I–II скл.)","diffusus, a, um","диффу́зус","разлитой"]];
+const W=WORDS.map(x=>({l:x[0],s:x[1],la:x[2],tr:x[3],ru:x[4]}));
+
+/* ---------- страницы ---------- */
+Q('#page-settings').insertAdjacentHTML('beforebegin',`
+<section class="page" id="page-latin"><h1>🏛 Латинский язык</h1><p class="sub">Лексика из вашего файла: учите по занятиям и проверяйте себя тестом на перевод.</p><div id="latinBody"></div></section>
+<section class="page" id="page-record"><h1>🎙 Запись лекции</h1><p class="sub">Диктофон для многочасовых лекций: запись сохраняется кусками прямо в браузере.</p><div id="recBody"></div></section>
+<section class="page" id="page-route"><h1>🚌 Маршруты до корпусов</h1><p class="sub">Добавьте адреса корпусов и автобусы или газели, на которых можно доехать.</p><div id="routeBody"></div></section>
+<section class="page" id="page-kaf"><h1>🏥 Кафедры</h1><p class="sub">Где находится кафедра и учебная комната: корпус, этаж, кабинет.</p><div id="kafBody"></div></section>`);
+[['latin','🏛','Латынь'],['record','🎙','Запись лекции'],['route','🚌','Маршрут'],['kaf','🏥','Кафедры']].forEach(a=>PAGES.push({id:a[0],ico:a[1],title:a[2]}));
+const ord=['home','brs','tests','latin','notes','lessons','record','schedule','route','kaf','settings'];
+PAGES.sort((a,b)=>ord.indexOf(a.id)-ord.indexOf(b.id));
+const _np=nav_page;nav_page=function(p){_np(p);ens();if(p==='latin')rLatin();if(p==='route')rRoute();if(p==='kaf')rKaf();if(p==='record')rRec();};
+
+/* ================= ЛАТЫНЬ ================= */
+const LAT={les:'all',q:'',tr:true,view:'list'};let FC=null,TS=null;
+const pool=()=>W.filter(w=>(LAT.les==='all'||w.l===+LAT.les)&&(!LAT.q||(w.la+' '+w.ru).toLowerCase().includes(LAT.q.toLowerCase())));
+function rLatin(){const lessons=[...new Set(W.map(w=>w.l))],wk=Object.keys(DB.latin.weak).length;
+ const head=`<div class="card"><div class="row" style="margin-bottom:8px"><button class="btn ${LAT.view==='list'?'btn-primary':'btn-ghost'} btn-sm" onclick="lxView('list')">📖 Слова</button><button class="btn ${LAT.view==='cards'?'btn-primary':'btn-ghost'} btn-sm" onclick="lxView('cards')">🃏 Карточки</button><button class="btn ${LAT.view==='test'||LAT.view==='run'||LAT.view==='res'?'btn-primary':'btn-green'} btn-sm" onclick="lxView('test')">🧪 Тест</button><span class="spacer"></span><span class="fx-mini">Тестов: ${DB.latin.tests} · лучший: ${DB.latin.best}%${wk?' · ошибок: '+wk:''}</span></div>
+ <div class="lx-chips"><button class="lx-chip ${LAT.les==='all'?'on':''}" onclick="lxLes('all')">Все (${W.length})</button>${lessons.map(l=>`<button class="lx-chip ${LAT.les==l?'on':''}" onclick="lxLes(${l})">Занятие ${l} (${W.filter(w=>w.l===l).length})</button>`).join('')}</div></div><div id="lxMain"></div>`;
+ Q('#latinBody').innerHTML=head;lxMain();}
+function lxMain(){const m=Q('#lxMain');if(!m)return;
+ if(LAT.view==='list'){const p=pool();let last='',h=`<div class="card"><div class="row"><input type="text" id="lxS" placeholder="Поиск по латыни или переводу…" value="${E(LAT.q)}" style="flex:1"><label class="fx-mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" ${LAT.tr?'checked':''} onchange="lxTr(this.checked)"> транскрипция</label></div>`;
+  p.forEach(w=>{const k=w.l+'|'+w.s;if(k!==last){h+=`<div class="lx-sec">Занятие ${w.l} · ${E(w.s)}</div>`;last=k;}h+=`<div class="lx-w"><b>${E(w.la)}</b><i>${LAT.tr?'['+E(w.tr)+']':''}</i><span>${E(w.ru)}</span></div>`;});
+  m.innerHTML=h+(p.length?'':'<div class="empty">Ничего не найдено</div>')+'</div>';const s=Q('#lxS');s.oninput=e=>{LAT.q=e.target.value;lxMain();const n=Q('#lxS');n.focus();n.setSelectionRange(n.value.length,n.value.length);};}
+ else if(LAT.view==='cards'){if(!FC||FC.src!==LAT.les){FC={src:LAT.les,d:shuf(pool()),i:0,f:false,rev:false};}rCard();}
+ else if(LAT.view==='test')rTestCfg();else if(LAT.view==='run')rQ();else if(LAT.view==='res')rRes();}
+window.lxView=v=>{LAT.view=v;if(v==='cards')FC=null;rLatin();};window.lxLes=l=>{LAT.les=l;FC=null;if(LAT.view==='run'||LAT.view==='res')LAT.view='test';rLatin();};window.lxTr=c=>{LAT.tr=c;lxMain();};
+function rCard(){const m=Q('#lxMain');if(!FC.d.length){m.innerHTML='<div class="card empty">Нет слов</div>';return;}const w=FC.d[FC.i],front=FC.rev?w.ru:w.la,back=FC.rev?w.la:w.ru;
+ m.innerHTML=`<div class="card"><div class="row" style="margin-bottom:10px"><b>${FC.i+1} / ${FC.d.length}</b><span class="spacer"></span><button class="btn btn-ghost btn-sm" onclick="fcRev()">⇄ ${FC.rev?'рус→лат':'лат→рус'}</button><button class="btn btn-ghost btn-sm" onclick="fcShuf()">🔀</button></div>
+ <div class="lx-card ${FC.f?'flip':''}" onclick="fcFlip()">${FC.f?E(back)+(FC.rev?`<small>[${E(w.tr)}]</small>`:''):E(front)+(!FC.rev&&LAT.tr?`<small>[${E(w.tr)}]</small>`:'')}<small>${FC.f?'':'нажмите, чтобы перевернуть'}</small></div>
+ <div class="row" style="margin-top:12px"><button class="btn btn-ghost" style="flex:1" onclick="fcNext(0)">😕 Не знаю</button><button class="btn btn-green" style="flex:1" onclick="fcNext(1)">✅ Знаю</button></div></div>`;}
+window.fcFlip=()=>{FC.f=!FC.f;rCard();};window.fcRev=()=>{FC.rev=!FC.rev;FC.f=false;rCard();};window.fcShuf=()=>{FC.d=shuf(FC.d);FC.i=0;FC.f=false;rCard();};
+window.fcNext=ok=>{const w=FC.d[FC.i];ens();if(!ok)DB.latin.weak[w.la]=(DB.latin.weak[w.la]||0)+1;else if(DB.latin.weak[w.la]){DB.latin.weak[w.la]--;if(!DB.latin.weak[w.la])delete DB.latin.weak[w.la];}save();FC.i=(FC.i+1)%FC.d.length;FC.f=false;rCard();};
+/* тест */
+const CFG={dir:'lr',n:20,src:'cur'};
+function rTestCfg(){const wk=Object.keys(DB.latin.weak).length,sel=(k,v,t)=>`<button class="lx-chip ${CFG[k]===v?'on':''}" onclick="cfg('${k}','${v}')">${t}</button>`;
+ Q('#lxMain').innerHTML=`<div class="card"><h3>Настройка теста</h3><div class="fx-mini">Направление</div><div class="lx-chips">${sel('dir','lr','Латынь → русский')}${sel('dir','rl','Русский → латынь')}${sel('dir','mix','Вперемешку')}</div>
+ <div class="fx-mini">Сколько слов</div><div class="lx-chips">${[10,20,30,50,999].map(n=>`<button class="lx-chip ${CFG.n===n?'on':''}" onclick="cfg('n',${n})">${n===999?'Все':n}</button>`).join('')}</div>
+ <div class="fx-mini">Источник слов</div><div class="lx-chips">${sel('src','cur','Выбранное занятие ('+pool().length+')')}${wk?sel('src','weak','Мои ошибки ('+wk+')'):''}</div>
+ <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="tStart()">▶ Начать тест</button></div>`;}
+window.cfg=(k,v)=>{CFG[k]=k==='n'?+v:v;rTestCfg();};
+window.tStart=()=>{ens();let src=CFG.src==='weak'?W.filter(w=>DB.latin.weak[w.la]):W.filter(w=>LAT.les==='all'||w.l===+LAT.les);if(src.length<4){toast('Нужно минимум 4 слова','error');return;}
+ const qs=shuf(src).slice(0,CFG.n).map(w=>{const rl=CFG.dir==='rl'||(CFG.dir==='mix'&&Math.random()<.5),key=rl?'la':'ru';
+  const same=W.filter(x=>x!==w&&x[key]!==w[key]);const near=shuf(same.filter(x=>x.l===w.l&&x.s===w.s)),mid=shuf(same.filter(x=>x.l===w.l)),far=shuf(same);
+  const opts=[w[key]];[...near,...mid,...far].forEach(x=>{if(opts.length<4&&!opts.includes(x[key]))opts.push(x[key]);});
+  return {w,rl,key,opts:shuf(opts),a:null};});
+ TS={qs,i:0,t0:Date.now(),done:false};LAT.view='run';rLatin();};
+function rQ(){const q=TS.qs[TS.i],w=q.w,n=TS.qs.length;
+ Q('#lxMain').innerHTML=`<div class="card"><div class="row"><b>${TS.i+1} / ${n}</b><span class="spacer"></span><span class="fx-mini">верно: ${TS.qs.filter(x=>x.a!==null&&x.a===x.w[x.key]).length}</span></div><div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${TS.i/n*100}%"></div></div>
+ <div class="fx-mini" style="text-align:center">${q.rl?'Переведите на латынь':'Переведите на русский'}</div><div class="lx-q">${E(q.rl?w.ru:w.la)}</div><div class="fx-mini" style="text-align:center;margin-bottom:14px">${!q.rl&&LAT.tr?'['+E(w.tr)+']':'&nbsp;'}</div>
+ <div id="lxO">${q.opts.map((o,i)=>`<button class="lx-opt" onclick="tPick(${i})"><span class="fx-kbd">${i+1}</span> ${E(o)}</button>`).join('')}</div><div id="lxF"></div></div>`;
+ if(q.a!==null)tShow();}
+function tShow(){const q=TS.qs[TS.i],c=q.w[q.key];QA('#lxO .lx-opt').forEach((b,i)=>{b.disabled=true;if(q.opts[i]===c)b.classList.add('ok');else if(q.opts[i]===q.a)b.classList.add('no');});
+ const ok=q.a===c;Q('#lxF').innerHTML=`<div class="feedback ${ok?'ok':'bad'}">${ok?'✅ Верно!':'❌ Неверно.'} <b>${E(q.w.la)}</b> [${E(q.w.tr)}] — ${E(q.w.ru)}</div><button class="btn btn-primary btn-block" style="margin-top:10px" onclick="tNext()">${TS.i+1<TS.qs.length?'Далее ➜':'Завершить'}</button>`;}
+window.tPick=i=>{const q=TS.qs[TS.i];if(q.a!==null)return;q.a=q.opts[i];ens();const w=q.w,ok=q.a===w[q.key];
+ if(!ok)DB.latin.weak[w.la]=(DB.latin.weak[w.la]||0)+1;else if(DB.latin.weak[w.la]){DB.latin.weak[w.la]--;if(!DB.latin.weak[w.la])delete DB.latin.weak[w.la];}save();tShow();};
+window.tNext=()=>{if(TS.i+1<TS.qs.length){TS.i++;rQ();}else tFinish();};
+function tFinish(){const n=TS.qs.length,ok=TS.qs.filter(q=>q.a===q.w[q.key]).length,pc=Math.round(ok/n*100);ens();DB.latin.tests++;DB.latin.best=Math.max(DB.latin.best,pc);
+ DB.results.unshift({id:uid(),title:'Латынь: '+(CFG.src==='weak'?'ошибки':LAT.les==='all'?'все занятия':'занятие '+LAT.les),percent:pc,date:new Date().toISOString(),durationSeconds:Math.round((Date.now()-TS.t0)/1000),answers:[]});DB.results=DB.results.slice(0,50);save();
+ TS.pc=pc;TS.ok=ok;LAT.view='res';if(pc>=71){try{fxConfetti();}catch(e){}}rLatin();}
+function rRes(){const bad=TS.qs.filter(q=>q.a!==q.w[q.key]),g=TS.pc>=90?5:TS.pc>=75?4:TS.pc>=60?3:2;
+ Q('#lxMain').innerHTML=`<div class="result-hero ${TS.pc>=71?'ok':'bad'}"><h2>${TS.pc}%</h2><p>Оценка: ${g} · верно ${TS.ok} из ${TS.qs.length}</p></div>
+ <div class="row" style="margin-bottom:12px"><button class="btn btn-primary" onclick="tStart()">🔁 Ещё раз</button>${bad.length?'<button class="btn btn-green" onclick="tRetry()">Повторить ошибки ('+bad.length+')</button>':''}<button class="btn btn-ghost" onclick="lxView(\'list\')">К словам</button></div>
+ ${bad.length?`<div class="card"><h3>Ошибки</h3>${bad.map(q=>`<div class="lx-w"><b>${E(q.w.la)}</b><i>[${E(q.w.tr)}]</i><span>${E(q.w.ru)}</span></div>`).join('')}</div>`:'<div class="card empty">Без ошибок — отлично! 🎉</div>'}`;}
+window.tRetry=()=>{const bad=TS.qs.filter(q=>q.a!==q.w[q.key]).map(q=>q.w);if(bad.length<1)return;const src=bad.length<4?[...bad,...shuf(W).slice(0,4-bad.length)]:bad;
+ TS={qs:shuf(src).map(w=>{const rl=CFG.dir==='rl'||(CFG.dir==='mix'&&Math.random()<.5),key=rl?'la':'ru',opts=[w[key]];shuf(W.filter(x=>x!==w&&x[key]!==w[key])).forEach(x=>{if(opts.length<4&&!opts.includes(x[key]))opts.push(x[key]);});return {w,rl,key,opts:shuf(opts),a:null};}),i:0,t0:Date.now()};LAT.view='run';rLatin();};
+document.addEventListener('keydown',e=>{if(!Q('#page-latin.active')||LAT.view!=='run'||!TS||/INPUT|TEXTAREA/.test(e.target.tagName))return;const q=TS.qs[TS.i];
+ if(/^[1-4]$/.test(e.key)&&q.a===null)tPick(+e.key-1);else if(e.key==='Enter'&&q.a!==null)tNext();});
+
+/* ================= МАРШРУТЫ ================= */
+let rq='';
+function rRoute(){const list=DB.routes.filter(p=>!rq||(p.name+' '+p.address).toLowerCase().includes(rq.toLowerCase()));
+ Q('#routeBody').innerHTML=`<div class="card"><h3>➕ Новый корпус</h3><div class="form-row"><label>Название</label><input type="text" id="rtN" placeholder="Например: Главный корпус"></div><div class="form-row"><label>Адрес</label><input type="text" id="rtA" placeholder="Город, улица, дом"></div><div class="form-row"><label>Заметка (вход, ориентир)</label><input type="text" id="rtC"></div><button class="btn btn-primary" onclick="rtAdd()">Добавить корпус</button></div>
+ ${DB.routes.length>2?`<input type="text" id="rtS" placeholder="🔎 Поиск корпуса" value="${E(rq)}" style="margin-bottom:12px">`:''}
+ ${list.map(p=>`<div class="card pl-card"><h3><span>🏫 ${E(p.name)}</span><span><button class="btn btn-ghost btn-sm" onclick="rtEdit('${p.id}')">✎</button> <button class="btn btn-ghost btn-sm" onclick="rtDel('${p.id}')">✕</button></span></h3>
+ <div style="margin-bottom:6px">📍 ${E(p.address)||'<i class="fx-mini">адрес не указан</i>'}</div>${p.note?`<div class="fx-mini" style="margin-bottom:6px">${E(p.note)}</div>`:''}
+ ${p.address?`<div style="margin:6px 0 10px"><a class="pl-a" target="_blank" rel="noopener" href="https://yandex.ru/maps/?text=${encodeURIComponent(p.address)}">🗺 На карте</a><a class="pl-a" target="_blank" rel="noopener" href="https://yandex.ru/maps/?rtext=~${encodeURIComponent(p.address)}&rtt=mt">🧭 Маршрут сюда</a></div>`:''}
+ <div class="fx-mini" style="margin-bottom:6px">Как добраться</div>${(p.buses||[]).map((b,i)=>`<div class="pl-bus"><span class="pl-num">${E(b.num)}</span><span class="pl-tag">${E(b.type)}</span><span style="flex:1">${b.from?'с остановки «'+E(b.from)+'»':''} ${b.note?'· '+E(b.note):''}</span><button class="btn btn-ghost btn-sm" onclick="rtDelBus('${p.id}',${i})">✕</button></div>`).join('')||'<div class="fx-mini">Автобусов пока нет</div>'}
+ <div class="row" style="margin-top:8px"><select id="bt_${p.id}" style="width:auto"><option>Газель</option><option>Автобус</option><option>Троллейбус</option><option>Трамвай</option></select><input type="text" id="bn_${p.id}" placeholder="№" style="width:70px"><input type="text" id="bf_${p.id}" placeholder="Остановка посадки" style="flex:1;min-width:130px"><input type="text" id="bc_${p.id}" placeholder="Интервал, цена…" style="flex:1;min-width:120px"><button class="btn btn-primary btn-sm" onclick="rtBus('${p.id}')">➕</button></div></div>`).join('')||(DB.routes.length?'<div class="empty">Ничего не найдено</div>':'<div class="empty">Добавьте первый корпус</div>')}`;
+ const s=Q('#rtS');if(s)s.oninput=e=>{rq=e.target.value;rRoute();const n=Q('#rtS');n.focus();n.setSelectionRange(n.value.length,n.value.length);};}
+window.rtAdd=()=>{const n=Q('#rtN').value.trim();if(!n){toast('Введите название','error');return;}DB.routes.push({id:uid(),name:n,address:Q('#rtA').value.trim(),note:Q('#rtC').value.trim(),buses:[]});save();rRoute();toast('Корпус добавлен','success');};
+window.rtDel=id=>{if(!confirm('Удалить корпус?'))return;DB.routes=DB.routes.filter(p=>p.id!==id);save();rRoute();};
+window.rtEdit=id=>{const p=DB.routes.find(x=>x.id===id);const n=prompt('Название',p.name);if(n===null)return;const a=prompt('Адрес',p.address);if(a===null)return;p.name=n.trim()||p.name;p.address=a.trim();save();rRoute();};
+window.rtBus=id=>{const p=DB.routes.find(x=>x.id===id),num=Q('#bn_'+id).value.trim();if(!num){toast('Укажите номер','error');return;}(p.buses=p.buses||[]).push({type:Q('#bt_'+id).value,num,from:Q('#bf_'+id).value.trim(),note:Q('#bc_'+id).value.trim()});save();rRoute();};
+window.rtDelBus=(id,i)=>{DB.routes.find(x=>x.id===id).buses.splice(i,1);save();rRoute();};
+
+/* ================= КАФЕДРЫ ================= */
+let kq='',kedit=null;
+function rKaf(){const k=kedit?DB.kaf.find(x=>x.id===kedit):null,v=f=>E(k?k[f]:'');const list=DB.kaf.filter(p=>!kq||Object.values(p).join(' ').toLowerCase().includes(kq.toLowerCase()));
+ Q('#kafBody').innerHTML=`<div class="card"><h3>${k?'✎ Изменить кафедру':'➕ Новая кафедра'}</h3><div class="form-row"><label>Название кафедры</label><input type="text" id="kN" value="${v('name')}" placeholder="Например: Кафедра анатомии"></div>
+ <div class="grid grid-3"><div class="form-row"><label>Корпус</label><input type="text" id="kB" value="${v('building')}"></div><div class="form-row"><label>Этаж кафедры</label><input type="text" id="kF" value="${v('floor')}"></div><div class="form-row"><label>Кабинет кафедры</label><input type="text" id="kR" value="${v('room')}"></div></div>
+ <div class="grid grid-2"><div class="form-row"><label>Учебная комната №</label><input type="text" id="kS" value="${v('study')}"></div><div class="form-row"><label>Этаж учебной комнаты</label><input type="text" id="kSF" value="${v('studyFloor')}"></div></div>
+ <div class="form-row"><label>Заметка (преподаватель, телефон, как пройти)</label><textarea id="kNote" style="min-height:56px">${v('note')}</textarea></div>
+ <div class="row"><button class="btn btn-primary" onclick="kSave()">${k?'Сохранить':'Добавить'}</button>${k?'<button class="btn btn-ghost" onclick="kCancel()">Отмена</button>':''}</div></div>
+ ${DB.kaf.length>2?`<input type="text" id="kQ" placeholder="🔎 Поиск кафедры" value="${E(kq)}" style="margin-bottom:12px">`:''}
+ ${list.map(p=>`<div class="card"><h3 style="display:flex;justify-content:space-between;gap:8px"><span>🏥 ${E(p.name)}</span><span><button class="btn btn-ghost btn-sm" onclick="kEdit('${p.id}')">✎</button> <button class="btn btn-ghost btn-sm" onclick="kDel('${p.id}')">✕</button></span></h3>
+ <div>${p.building?`<span class="pl-tag">🏢 ${E(p.building)}</span>`:''}${p.floor?`<span class="pl-tag">⬆ кафедра: ${E(p.floor)} этаж</span>`:''}${p.room?`<span class="pl-tag">каб. ${E(p.room)}</span>`:''}</div>
+ ${(p.study||p.studyFloor)?`<div style="margin-top:6px"><span class="pl-tag" style="background:rgba(85,224,193,.18)">📚 учебная комната ${E(p.study)}${p.studyFloor?' · '+E(p.studyFloor)+' этаж':''}</span></div>`:''}
+ ${p.note?`<div class="fx-mini" style="margin-top:8px;white-space:pre-wrap">${E(p.note)}</div>`:''}</div>`).join('')||(DB.kaf.length?'<div class="empty">Ничего не найдено</div>':'<div class="empty">Добавьте первую кафедру</div>')}`;
+ const s=Q('#kQ');if(s)s.oninput=e=>{kq=e.target.value;rKaf();const n=Q('#kQ');n.focus();n.setSelectionRange(n.value.length,n.value.length);};}
+window.kSave=()=>{const n=Q('#kN').value.trim();if(!n){toast('Введите название','error');return;}const o={name:n,building:Q('#kB').value.trim(),floor:Q('#kF').value.trim(),room:Q('#kR').value.trim(),study:Q('#kS').value.trim(),studyFloor:Q('#kSF').value.trim(),note:Q('#kNote').value.trim()};
+ if(kedit){Object.assign(DB.kaf.find(x=>x.id===kedit),o);kedit=null;}else DB.kaf.push({id:uid(),...o});save();rKaf();toast('Сохранено','success');};
+window.kEdit=id=>{kedit=id;rKaf();window.scrollTo({top:0,behavior:'smooth'});};window.kCancel=()=>{kedit=null;rKaf();};window.kDel=id=>{if(!confirm('Удалить кафедру?'))return;DB.kaf=DB.kaf.filter(p=>p.id!==id);save();rKaf();};
+
+/* ================= ДИКТОФОН ================= */
+let idb=null;const rqp=r=>new Promise((a,b)=>{r.onsuccess=()=>a(r.result);r.onerror=()=>b(r.error);});
+function idbOpen(){if(idb)return Promise.resolve(idb);return new Promise((res,rej)=>{try{const r=indexedDB.open('mir_lectures',1);r.onupgradeneeded=()=>{r.result.createObjectStore('meta',{keyPath:'id'});r.result.createObjectStore('chunks',{keyPath:['id','n']});};r.onsuccess=()=>{idb=r.result;res(idb);};r.onerror=()=>rej(r.error);}catch(e){rej(e);}});}
+const st=(n,m)=>idb.transaction(n,m).objectStore(n);
+const putMeta=m=>rqp(st('meta','readwrite').put(m)),putChunk=(id,n,b)=>rqp(st('chunks','readwrite').put({id,n,b}));
+const allMeta=()=>rqp(st('meta','readonly').getAll());
+const getBlob=async(m)=>{const rows=await rqp(st('chunks','readonly').getAll(IDBKeyRange.bound([m.id,0],[m.id,Infinity])));return new Blob(rows.map(r=>r.b),{type:m.mime||'audio/webm'});};
+const delRec=async id=>{await rqp(st('meta','readwrite').delete(id));await rqp(st('chunks','readwrite').delete(IDBKeyRange.bound([id,0],[id,Infinity])));};
+const R={mr:null,stream:null,meta:null,n:0,t0:0,acc:0,paused:false,h:null,ac:null,an:null,wl:null,raf:0};
+const rel=()=>R.acc+((R.mr&&!R.paused)?(Date.now()-R.t0)/1000:0);
+async function rRec(){const b=Q('#recBody');b.innerHTML='<div class="empty">Загрузка…</div>';
+ try{await idbOpen();}catch(e){b.innerHTML='<div class="card empty">Браузер не даёт сохранять записи (хранилище недоступно). Откройте приложение в обычном окне браузера.</div>';return;}
+ const metas=(await allMeta()).sort((a,c)=>c.date-a.date),recording=!!R.mr,sup=!!(navigator.mediaDevices&&window.MediaRecorder);
+ b.innerHTML=`<div class="card"><div class="rc-big" id="rcT">${hms(rel())}</div><div style="text-align:center;min-height:22px;margin:4px 0" id="rcS">${recording?(R.paused?'⏸ Пауза':'<span class="rc-dot"></span>Идёт запись'):''}</div><div class="rc-meter"><i id="rcM"></i></div>
+ ${recording?'':`<div class="form-row"><label>Название лекции</label><input type="text" id="rcN" placeholder="Например: Анатомия, лекция 5"></div>`}
+ <div class="row" style="justify-content:center">${!sup?'<div class="fx-mini">Этот браузер не поддерживает запись звука.</div>':recording?`<button class="btn btn-ghost" onclick="rcPause()">${R.paused?'▶ Продолжить':'⏸ Пауза'}</button><button class="btn btn-danger" onclick="rcStop()">⏹ Остановить и сохранить</button>`:'<button class="btn btn-primary" onclick="rcStart()">🎙 Начать запись</button>'}</div>
+ <div class="fx-mini" style="margin-top:10px;text-align:center">Звук пишется кусками каждые 10 секунд и сразу сохраняется. Экран не гаснет во время записи. Не закрывайте вкладку; на телефоне держите её открытой. Примерно 15 МБ в час.</div></div>
+ <div class="card"><h3>🎧 Мои записи</h3>${metas.map(m=>`<div class="rc-item"><div class="row"><b style="flex:1">${E(m.name)}</b><span class="fx-mini">${new Date(m.date).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div>
+ <div class="fx-mini">${hms(m.dur)} · ${(m.size/1048576).toFixed(1)} МБ${m.status==='rec'&&!(R.meta&&R.meta.id===m.id)?' · <b style="color:var(--warn)">запись прервана</b>':''}</div>
+ <div class="row" style="margin-top:6px">${m.status==='rec'&&!(R.meta&&R.meta.id===m.id)?`<button class="btn btn-green btn-sm" onclick="rcFix('${m.id}')">♻ Восстановить</button>`:''}<button class="btn btn-ghost btn-sm" onclick="rcPlay('${m.id}')">▶ Слушать</button><button class="btn btn-ghost btn-sm" onclick="rcDl('${m.id}')">⬇ Скачать</button><button class="btn btn-ghost btn-sm" onclick="rcRen('${m.id}')">✎</button><button class="btn btn-ghost btn-sm" onclick="rcDel('${m.id}')">✕</button></div><div id="pl_${m.id}"></div></div>`).join('')||'<div class="empty">Записей пока нет</div>'}</div>`;
+ if(recording)rcTick();}
+function rcTick(){const t=Q('#rcT');if(t)t.textContent=hms(rel());}
+function meter(){const a=R.an;if(!a){return;}const d=new Uint8Array(a.fftSize);a.getByteTimeDomainData(d);let s=0;for(const v of d)s+=Math.abs(v-128);const m=Q('#rcM');if(m)m.style.width=Math.min(100,s/d.length*6)+'%';R.raf=requestAnimationFrame(meter);}
+async function wake(){try{if(navigator.wakeLock){R.wl=await navigator.wakeLock.request('screen');}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(R.mr&&document.visibilityState==='visible')wake();});
+window.addEventListener('beforeunload',e=>{if(R.mr){e.preventDefault();e.returnValue='';}});
+window.rcStart=async function(){try{await idbOpen();R.stream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){toast('Нет доступа к микрофону. Разрешите его в браузере.','error');return;}
+ const mimes=['audio/webm;codecs=opus','audio/webm','audio/mp4'],mime=mimes.find(m=>MediaRecorder.isTypeSupported(m))||'';
+ const name=(Q('#rcN')?.value||'').trim()||('Лекция '+new Date().toLocaleDateString('ru-RU'));
+ R.meta={id:uid(),name,date:Date.now(),dur:0,size:0,mime:mime||'audio/webm',status:'rec'};R.n=0;R.acc=0;R.paused=false;await putMeta(R.meta);
+ try{R.mr=new MediaRecorder(R.stream,mime?{mimeType:mime,audioBitsPerSecond:32000}:{audioBitsPerSecond:32000});}catch(e){R.mr=new MediaRecorder(R.stream);}
+ R.mr.ondataavailable=async ev=>{if(!ev.data||!ev.data.size)return;const n=R.n++;R.meta.size+=ev.data.size;R.meta.dur=Math.round(rel());try{await putChunk(R.meta.id,n,ev.data);if(n%3===0)await putMeta(R.meta);}catch(e){toast('Не хватает места для записи!','error');}};
+ R.mr.start(10000);R.t0=Date.now();R.h=setInterval(rcTick,500);
+ try{R.ac=new (window.AudioContext||window.webkitAudioContext)();const s=R.ac.createMediaStreamSource(R.stream);R.an=R.ac.createAnalyser();R.an.fftSize=256;s.connect(R.an);meter();}catch(e){}
+ wake();rRec();toast('Запись началась','success');};
+window.rcPause=()=>{if(!R.mr)return;if(R.paused){R.mr.resume();R.t0=Date.now();R.paused=false;}else{R.acc=rel();R.mr.pause();R.paused=true;}rRec();};
+window.rcStop=async function(){if(!R.mr)return;const dur=Math.round(rel());clearInterval(R.h);cancelAnimationFrame(R.raf);const mr=R.mr;
+ await new Promise(r=>{mr.onstop=r;try{mr.stop();}catch(e){r();}});await new Promise(r=>setTimeout(r,400));
+ R.stream.getTracks().forEach(t=>t.stop());try{R.ac&&R.ac.close();}catch(e){}try{R.wl&&R.wl.release();}catch(e){}
+ R.meta.dur=dur;R.meta.status='done';await putMeta(R.meta);R.mr=null;R.an=null;R.ac=null;R.acc=0;R.meta=null;toast('Лекция сохранена','success');rRec();};
+window.rcFix=async id=>{const m=(await allMeta()).find(x=>x.id===id);const rows=await rqp(st('chunks','readonly').getAll(IDBKeyRange.bound([id,0],[id,Infinity])));m.size=rows.reduce((a,r)=>a+r.b.size,0);m.dur=m.dur||rows.length*10;m.status='done';await putMeta(m);toast('Запись восстановлена','success');rRec();};
+window.rcPlay=async id=>{const m=(await allMeta()).find(x=>x.id===id),box=Q('#pl_'+id);if(box.firstChild){box.innerHTML='';return;}const blob=await getBlob(m);box.innerHTML='<audio controls></audio>';const a=box.firstChild;a.src=URL.createObjectURL(blob);a.play().catch(()=>{});};
+window.rcDl=async id=>{const m=(await allMeta()).find(x=>x.id===id),blob=await getBlob(m),ext=/mp4/.test(m.mime)?'mp4':'webm',fn=(m.name.replace(/[^\wа-яё -]/gi,'').trim()||'lecture')+'.'+ext;
+ try{if(window.claude&&claude.use){const dl=await claude.use('downloads');if(dl){await dl.save({filename:fn,data:blob});return;}}}catch(e){if(e&&e.code==='declined')return;}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);};
+window.rcRen=async id=>{const m=(await allMeta()).find(x=>x.id===id),n=prompt('Название лекции',m.name);if(!n)return;m.name=n.trim();await putMeta(m);rRec();};
+window.rcDel=async id=>{if(!confirm('Удалить запись безвозвратно?'))return;await delRec(id);rRec();};
+})();
+</script>
+
+<!-- ===== MIR FX LAYER: эффекты и новые функции ===== -->
+<style>
+#fx-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.6}
+.main{position:relative;z-index:1}
+.btn,.hl-btn{position:relative;overflow:hidden}
+.btn:active{transform:scale(.96)}
+.btn-primary:hover{box-shadow:0 8px 22px rgba(139,124,255,.45);transform:translateY(-1px)}
+.fx-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:fxrp .6s linear;pointer-events:none}
+@keyframes fxrp{to{transform:scale(4);opacity:0}}
+.card{transition:transform .2s,box-shadow .2s,border-color .2s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card.fxg{background-image:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgba(139,124,255,.16),transparent 65%)}
+.option{transition:.15s}.option:hover{transform:translateX(4px)}
+.option.correct{animation:fxpop .45s}.option.incorrect{animation:fxshake .4s}
+@keyframes fxpop{50%{transform:scale(1.03);box-shadow:0 0 0 6px rgba(74,222,181,.25)}}
+@keyframes fxshake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.progress-fill{background-size:200% 100%;animation:fxsh 2.5s linear infinite}
+@keyframes fxsh{to{background-position:-200% 0}}
+.stat-value{font-variant-numeric:tabular-nums}
+.hero-symbol{animation:fxfl 5s ease-in-out infinite}
+@keyframes fxfl{50%{transform:translateY(-8px)}}
+.fx-in>*{opacity:0;animation:fade .5s ease forwards}
+.fx-in>*:nth-child(2){animation-delay:.08s}.fx-in>*:nth-child(3){animation-delay:.16s}.fx-in>*:nth-child(4){animation-delay:.24s}
+/* дашборд */
+.fx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:12px}
+.fx-ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;flex:none;background:conic-gradient(var(--accent-2) calc(var(--p)*1%),var(--panel-2) 0)}
+.fx-ring>div{width:66px;height:66px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-weight:800;font-size:15px}
+.fx-big{font-size:34px;font-weight:800;line-height:1}
+.fx-mini{font-size:12px;color:var(--muted)}
+.fx-flex{display:flex;gap:14px;align-items:center}
+.fx-weak{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)}
+/* помодоро — скрыт, появляется только по кнопке на вкладке Уроки */
+#pomo{display:none;position:fixed;right:16px;bottom:16px;z-index:150;background:var(--panel);border:1px solid var(--border);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:10px 14px;flex-direction:column;gap:8px;min-width:116px}
+#pomo.visible{display:flex}
+#pomo .pt{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;cursor:pointer;display:flex;align-items:center;gap:8px}
+#pomo.run .pt{color:var(--accent-2)}#pomo.brk .pt{color:var(--warn)}
+#pomo .pc{display:none;gap:6px}#pomo.open .pc{display:flex}
+@media(max-width:760px){#pomo{bottom:80px;right:10px}}
+.pomo-panel{margin-bottom:14px}
+.pomo-panel .pomo-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.pomo-panel .pomo-time{font-size:42px;font-weight:800;font-variant-numeric:tabular-nums;text-align:center;letter-spacing:-1px}
+.pomo-panel .pomo-mode{text-align:center;color:var(--accent-2);font-weight:700;margin-bottom:4px}
+.pomo-ring-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.pomo-ring-row input[type=file]{font-size:12px;max-width:100%}
+/* палитра */
+#fxp{position:fixed;inset:0;z-index:500;background:rgba(5,8,20,.6);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding-top:12vh}
+#fxp.open{display:flex}
+#fxp .box{width:min(560px,92vw);background:var(--panel);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);animation:fade .2s}
+#fxp input{border:none;border-radius:0;border-bottom:1px solid var(--border);padding:16px;font-size:16px}
+#fxp .list{max-height:50vh;overflow:auto}
+#fxp .it{padding:11px 16px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between}
+#fxp .it.sel,#fxp .it:hover{background:var(--panel-2);color:var(--accent)}
+#fxp .it small{color:var(--muted)}
+.fx-kbd{font-size:11px;border:1px solid var(--border);border-radius:6px;padding:1px 6px;color:var(--muted)}
+.fx-search{background:var(--panel-2);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer}
+</style>
+<canvas id="fx-canvas"></canvas>
+<div id="pomo"><div class="pt" onclick="fxPomo.toggleOpen()"><span>🍅</span><span id="pomoT">25:00</span></div>
+<div class="pc"><button class="btn btn-primary btn-sm" id="pomoGo" onclick="fxPomo.toggle()">▶</button><button class="btn btn-ghost btn-sm" onclick="fxPomo.reset()">↺</button><button class="btn btn-ghost btn-sm" onclick="fxPomo.skip()">⏭</button></div></div>
+<div id="fxp" onclick="if(event.target===this)fxPal.close()"><div class="box"><input id="fxpi" type="text" placeholder="Команда или поиск… (Esc — закрыть)" autocomplete="off"><div class="list" id="fxpl"></div></div></div>
+<script>
+(function(){
+const $q=s=>document.querySelector(s), $$q=s=>[...document.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const dk=d=>{d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const today=()=>dk(Date.now());
+const ensure=()=>{DB.focus=DB.focus||{};DB.settings.goal=DB.settings.goal||60;if(DB.settings.sound===undefined)DB.settings.sound=true;};
+
+/* ---------- звук ---------- */
+let ac;
+function beep(f,d=.12,t='sine',v=.06){ if(!DB.settings.sound)return; try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d);}catch(e){} }
+const ding=()=>{beep(660);setTimeout(()=>beep(880,.18),90)}, buzz=()=>beep(150,.25,'sawtooth',.05);
+
+/* ---------- фон: частицы ---------- */
+const cv=$q('#fx-canvas'),cx=cv.getContext('2d');let W,H,P=[];
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;P=Array.from({length:Math.min(55,Math.round(W*H/26000))},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*2+1}));}
+function loop(){ if(!document.hidden){cx.clearRect(0,0,W,H);const c=getComputedStyle(document.body).getPropertyValue('--accent').trim()||'#8b7cff';cx.fillStyle=c;cx.strokeStyle=c;
+ P.forEach((p,i)=>{p.x=(p.x+p.vx+W)%W;p.y=(p.y+p.vy+H)%H;cx.globalAlpha=.55;cx.beginPath();cx.arc(p.x,p.y,p.r,0,7);cx.fill();
+  for(let j=i+1;j<P.length;j++){const q=P[j],d=Math.hypot(p.x-q.x,p.y-q.y);if(d<120){cx.globalAlpha=(1-d/120)*.25;cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(q.x,q.y);cx.stroke();}}});}
+ requestAnimationFrame(loop);}
+rs();addEventListener('resize',rs);if(!RM)loop();else cv.style.display='none';
+
+/* ---------- конфетти ---------- */
+window.fxConfetti=function(n=140){ if(RM)return;const c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;z-index:600;pointer-events:none';c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);const g=c.getContext('2d');
+ const cols=['#8b7cff','#55e0c1','#ffc56b','#ff718d','#6fb7ff'];const a=Array.from({length:n},()=>({x:c.width/2,y:c.height*.35,vx:(Math.random()-.5)*14,vy:Math.random()*-12-3,s:Math.random()*7+4,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[Math.random()*5|0]}));let f=0;
+ (function t(){g.clearRect(0,0,c.width,c.height);a.forEach(p=>{p.vy+=.3;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);g.restore();});if(++f<150)requestAnimationFrame(t);else c.remove();})();};
+
+/* ---------- ripple + подсветка карточек ---------- */
+document.addEventListener('click',e=>{const b=e.target.closest('.btn');if(!b)return;const r=b.getBoundingClientRect(),s=Math.max(r.width,r.height),d=document.createElement('span');d.className='fx-ripple';d.style.cssText=`width:${s}px;height:${s}px;left:${e.clientX-r.left-s/2}px;top:${e.clientY-r.top-s/2}px`;b.appendChild(d);setTimeout(()=>d.remove(),600);});
+document.addEventListener('mousemove',e=>{const c=e.target.closest&&e.target.closest('.card');if(!c)return;const r=c.getBoundingClientRect();c.classList.add('fxg');c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px');});
+
+/* ---------- count-up ---------- */
+function countUp(el){const t=parseInt(el.textContent)||0;if(RM||t===0)return;const t0=performance.now();(function s(n){const k=Math.min(1,(n-t0)/700);el.textContent=Math.round(t*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(s);})(t0);}
+
+/* ---------- акцентные цвета ---------- */
+const ACC={'Фиолетовый':'#8b7cff','Бирюзовый':'#2fd0b0','Розовый':'#ff7aa8','Оранжевый':'#ff9d4d','Синий':'#5aa2ff'};
+function applyAccent(){const a=DB.settings.accent;if(a){document.body.style.setProperty('--accent',a);}else document.body.style.removeProperty('--accent');}
+
+/* ---------- панель на главной ---------- */
+function streak(){const s=new Set(DB.results.map(r=>dk(r.date)));Object.keys(DB.focus||{}).forEach(k=>DB.focus[k]>0&&s.add(k));let n=0,d=new Date();if(!s.has(dk(d)))d.setDate(d.getDate()-1);while(s.has(dk(d))){n++;d.setDate(d.getDate()-1);}return n;}
+function chart(){const r=DB.results.slice(0,10).reverse();if(r.length<2)return '<div class="fx-mini">Пройди минимум 2 теста — здесь появится график прогресса.</div>';
+ const w=300,h=90,x=i=>10+i*(w-20)/(r.length-1),y=p=>h-8-(p/100)*(h-16);
+ const pts=r.map((q,i)=>x(i)+','+y(q.percent)).join(' ');
+ return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto"><line x1="0" x2="${w}" y1="${y(71)}" y2="${y(71)}" stroke="var(--ok)" stroke-dasharray="4 4" opacity=".5"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>${r.map((q,i)=>`<circle cx="${x(i)}" cy="${y(q.percent)}" r="4" fill="${q.percent>=71?'var(--ok)':'var(--danger)'}"><title>${q.percent}%</title></circle>`).join('')}</svg>`;}
+function fxHome(){ensure();const pg=$q('#page-home');if(!pg)return;let box=$q('#fx-home');if(!box){box=document.createElement('div');box.id='fx-home';const g=pg.querySelector('.grid-3');g.after(box);}
+ const m=DB.focus[today()]||0,goal=DB.settings.goal,pct=Math.min(100,Math.round(m/goal*100));
+ const ed=DB.settings.examDate,left=ed?Math.ceil((new Date(ed+'T00:00')-new Date().setHours(0,0,0,0))/864e5):null;
+ const res=DB.results,avg=res.length?Math.round(res.reduce((a,r)=>a+r.percent,0)/res.length):0,best=res.length?Math.max(...res.map(r=>r.percent)):0;
+ const by={};res.forEach(r=>(by[r.title]=by[r.title]||[]).push(r.percent));
+ const weak=Object.entries(by).map(([t,a])=>[t,Math.round(a.reduce((x,y)=>x+y,0)/a.length)]).sort((a,b)=>a[1]-b[1]).slice(0,3);
+ box.innerHTML=`<div class="fx-grid fx-in">
+ <div class="card fx-flex"><div class="fx-ring" style="--p:${pct}"><div>${pct}%</div></div><div><b>Фокус сегодня</b><div class="fx-mini">${m} из ${goal} мин</div><button class="btn btn-ghost btn-sm" style="margin-top:6px" id="fxGoal">Цель</button></div></div>
+ <div class="card"><div class="fx-big">🔥 ${streak()}</div><div class="fx-mini" style="margin:4px 0 8px">дней подряд с учёбой</div><div class="fx-mini">Средний балл: <b style="color:var(--text)">${avg}%</b> · лучший: <b style="color:var(--text)">${best}%</b></div></div>
+ <div class="card"><b>📅 До экзамена</b><div class="fx-big" style="margin:6px 0">${left===null?'—':left>0?left+' дн.':left===0?'сегодня!':'прошёл'}</div><input type="date" id="fxExam" value="${ed||''}"></div></div>
+ <div class="fx-grid fx-in"><div class="card"><b>📈 Динамика результатов</b><div style="margin-top:8px">${chart()}</div></div>
+ <div class="card"><b>🎯 Слабые места</b><div style="margin-top:8px">${weak.length?weak.map(w=>`<div class="fx-weak"><span>${escapeHtml(w[0])}</span><span class="badge ${w[1]>=71?'ok':'danger'}">${w[1]}%</span></div>`).join(''):'<div class="fx-mini">Пока нет данных.</div>'}</div></div></div>`;
+ $q('#fxExam').onchange=e=>{DB.settings.examDate=e.target.value;save();fxHome();};
+ $q('#fxGoal').onclick=()=>{const v=parseInt(prompt('Цель на день, минут:',goal));if(v>0){DB.settings.goal=v;save();fxHome();}};
+ $$q('.stat-value').forEach(countUp);}
+const _rh=renderHome;renderHome=function(){_rh();fxHome();};
+
+/* ---------- Помодоро (только во вкладке Уроки, появляется по кнопке) ---------- */
+const pm={mode:'work',left:1500,run:false,h:null,acc:0,shown:false};
+const pe=$q('#pomo');
+let pomoAudio=null;
+let pomoAudioUrl=null;
+
+function playPomoRingtone(){
+  if(pomoAudio&&pomoAudioUrl){
+    try{pomoAudio.currentTime=0;pomoAudio.play().catch(()=>ding());return;}catch(e){}
+  }
+  ding();
+}
+
+function pdraw(){
+  const m=String(pm.left/60|0).padStart(2,'0'),s=String(pm.left%60).padStart(2,'0');
+  const tEl=$q('#pomoT'); if(tEl) tEl.textContent=m+':'+s;
+  const go=$q('#pomoGo'); if(go) go.textContent=pm.run?'⏸':'▶';
+  if(pe){
+    pe.classList.toggle('run',pm.run&&pm.mode==='work');
+    pe.classList.toggle('brk',pm.mode==='break');
+    pe.classList.toggle('visible', !!pm.shown);
+    pe.classList.toggle('open', !!pm.shown);
+  }
+  const pt=$q('#pomoPanelTime'); if(pt) pt.textContent=m+':'+s;
+  const pmEl=$q('#pomoPanelMode'); if(pmEl) pmEl.textContent=pm.mode==='work'?'🍅 Работа':'☕ Перерыв';
+  const pg=$q('#pomoPanelGo'); if(pg) pg.textContent=pm.run?'⏸ Пауза':'▶ Старт';
+  const ringName=$q('#pomoRingName');
+  if(ringName) ringName.textContent=DB.settings.ringtoneName||'Стандартный звук';
+  document.title=pm.run?`${m}:${s} · MIR.knowledge`:'MIR.knowledge — БРС ОрГМУ 2026';
+}
+function ptick(){
+  pm.left--;
+  if(pm.mode==='work'){pm.acc++;if(pm.acc%60===0){ensure();DB.focus[today()]=(DB.focus[today()]||0)+1;save();}}
+  if(pm.left<=0){
+    const w=pm.mode==='work';
+    pm.mode=w?'break':'work';
+    pm.left=w?300:1500;
+    pm.run=false;clearInterval(pm.h);
+    playPomoRingtone();
+    try{fxConfetti(60);}catch(e){}
+    toast(w?'Сессия завершена! Перерыв 5 минут ☕':'Перерыв окончен — за работу!','success');
+  }
+  pdraw();
+}
+window.fxPomo={
+  show(){pm.shown=true;if(pe){pe.classList.add('visible','open');}pdraw();},
+  hide(){if(!pm.run){pm.shown=false;if(pe){pe.classList.remove('visible','open');}}pdraw();},
+  toggleOpen(){if(pm.shown) this.hide(); else this.show();},
+  toggle(){pm.run=!pm.run;clearInterval(pm.h);if(pm.run){pm.shown=true;pm.h=setInterval(ptick,1000);}pdraw();},
+  reset(){clearInterval(pm.h);pm.run=false;pm.mode='work';pm.left=1500;pdraw();},
+  skip(){clearInterval(pm.h);pm.run=false;pm.mode=pm.mode==='work'?'break':'work';pm.left=pm.mode==='work'?1500:300;pdraw();},
+  redraw(){pdraw();},
+  isShown(){return !!pm.shown;}
+};
+window.setPomoRingtone=function(file){
+  if(!file)return;
+  if(pomoAudioUrl){try{URL.revokeObjectURL(pomoAudioUrl);}catch(e){}}
+  pomoAudioUrl=URL.createObjectURL(file);
+  pomoAudio=new Audio(pomoAudioUrl);
+  pomoAudio.preload='auto';
+  DB.settings.ringtoneName=file.name;
+  save();
+  pdraw();
+  toast('Рингтон: '+file.name,'success');
+};
+window.clearPomoRingtone=function(){
+  if(pomoAudioUrl){try{URL.revokeObjectURL(pomoAudioUrl);}catch(e){}}
+  pomoAudio=null;pomoAudioUrl=null;
+  DB.settings.ringtoneName='';
+  save();pdraw();toast('Стандартный звук','success');
+};
+window.previewPomoRingtone=function(){playPomoRingtone();};
+pdraw();
+
+/* ---------- работа над ошибками + конфетти ---------- */
+let lastWrong=[];
+const _ft=finishTest;finishTest=function(){const s=testSession;lastWrong=s?s.questions.filter((q,i)=>!s.answers[i].correct):[];_ft();
+ const pc=DB.results[0]?.percent||0;if(pc>=71){fxConfetti();ding();}else buzz();
+ const row=$q('#page-result .row');if(row&&!$q('#fxMis')){const b=document.createElement('button');b.id='fxMis';b.className='btn btn-green';b.onclick=()=>fxMistakes();row.prepend(b);}
+ const b=$q('#fxMis');if(b){b.style.display=lastWrong.length?'inline-flex':'none';b.textContent='🔁 Работа над ошибками ('+lastWrong.length+')';}};
+window.fxMistakes=function(){if(!lastWrong.length)return;testSession={title:'Работа над ошибками',questions:lastWrong.map(q=>({...q,options:[...q.options]})),current:0,answers:lastWrong.map(()=>({raw:null,checked:false})),timer:0,timeLeft:0,timerHandle:null,startTime:Date.now()};nav_page('test');renderTestQuestion();};
+
+/* звук ответа */
+new MutationObserver(()=>{const f=$q('#qFeedback .feedback');if(!f)return;f.classList.contains('ok')?ding():buzz();}).observe($q('#qFeedback')||document.body,{childList:true});
+
+/* ---------- горячие клавиши в тесте ---------- */
+document.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();fxPal.open();return;}
+ if($q('#fxp.open')||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.target.isContentEditable)return;
+ if(e.key==='/'){e.preventDefault();fxPal.open();return;}
+ if(!$q('#page-test.active'))return;
+ if(/^[1-9]$/.test(e.key)){const o=$$q('#qAnswerArea .option')[+e.key-1];o&&o.click();}
+ else if(e.key==='Enter'){const c=$q('#btnCheck'),n=$q('#btnNext');(c&&c.style.display!=='none'?c:n)?.click();}
+ else if(e.key==='ArrowLeft')$q('#btnPrev')?.click();
+});
+
+/* ---------- палитра команд ---------- */
+const pal=$q('#fxp'),pi=$q('#fxpi'),pl=$q('#fxpl');let items=[],sel=0;
+function build(){const a=[];PAGES.forEach(p=>a.push({t:p.ico+' '+p.title,h:'раздел',f:()=>nav_page(p.id)}));
+ a.push({t:'🍅 Запустить/пауза Помодоро',h:'фокус',f:()=>{nav_page('lessons');fxPomo.show();fxPomo.toggle();}});
+ a.push({t:'◐ Сменить тему',h:'вид',f:toggleTheme});
+ a.push({t:(DB.settings.sound?'🔇 Выключить':'🔊 Включить')+' звуки',h:'вид',f:()=>{DB.settings.sound=!DB.settings.sound;save();toast(DB.settings.sound?'Звуки включены':'Звуки выключены');}});
+ Object.entries(ACC).forEach(([n,c])=>a.push({t:'🎨 Акцент: '+n,h:'вид',f:()=>{DB.settings.accent=c;save();applyAccent();}}));
+ DB.tests.forEach(t=>a.push({t:'▶ Пройти: '+t.title,h:(t.questions.length)+' вопр.',f:()=>quickStartTest(t.id)}));
+ (DB.notes||[]).forEach(n=>a.push({t:'📝 '+(n.title||n.subject||'Конспект'),h:'конспект',f:()=>{nav_page('notes');openSavedNote&&openSavedNote(n.id);}}));
+ return a;}
+function show(){const q=pi.value.toLowerCase().trim();items=build().filter(i=>i.t.toLowerCase().includes(q)).slice(0,30);sel=Math.min(sel,Math.max(0,items.length-1));
+ pl.innerHTML=items.map((i,k)=>`<div class="it ${k===sel?'sel':''}" data-k="${k}"><span>${escapeHtml(i.t)}</span><small>${escapeHtml(i.h)}</small></div>`).join('')||'<div class="it"><small>Ничего не найдено</small></div>';}
+window.fxPal={open(){ensure();pal.classList.add('open');pi.value='';sel=0;show();setTimeout(()=>pi.focus(),30);},close(){pal.classList.remove('open');},run(k){const i=items[k];if(i){fxPal.close();i.f();}}};
+pi.oninput=()=>{sel=0;show();};
+pl.onclick=e=>{const it=e.target.closest('.it[data-k]');it&&fxPal.run(+it.dataset.k);};
+pi.onkeydown=e=>{if(e.key==='Escape')fxPal.close();else if(e.key==='ArrowDown'){sel=Math.min(items.length-1,sel+1);show();e.preventDefault();}else if(e.key==='ArrowUp'){sel=Math.max(0,sel-1);show();e.preventDefault();}else if(e.key==='Enter')fxPal.run(sel);};
+
+/* кнопка поиска в шапке */
+const ta=$q('.topbar-actions');if(ta){const b=document.createElement('button');b.className='fx-search';b.innerHTML='🔎 Поиск <span class="fx-kbd">Ctrl K</span>';b.onclick=()=>fxPal.open();ta.prepend(b);}
+
+/* старт */
+const go=()=>{ensure();applyAccent();if($q('#page-home.active'))renderHome();};
+if(document.readyState==='complete')setTimeout(go,50);else addEventListener('load',()=>setTimeout(go,50));
+})();
+</script>
+
+</body>
+</html>
